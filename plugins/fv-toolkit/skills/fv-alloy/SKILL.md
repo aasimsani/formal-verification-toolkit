@@ -87,7 +87,7 @@ Copy `examples/good/rbac/` to start.
 
 ## Examples
 
-`examples/INDEX.md` lists every example. `examples/good/rbac/` is the complete pattern. `examples/bad/` holds three models whose checks pass while they prove nothing. Read `bad/fact-forbids-the-bug/` before you write your first fact.
+`examples/INDEX.md` lists every example. `examples/good/rbac/` is the complete pattern, and the other folders under `examples/good/` are templates for relationship-based access, schema compatibility, slowly changing dimensions, PII lineage and tenant isolation. Start from the template whose pattern matches the claim. `examples/bad/` holds four models whose checks pass while they prove nothing. Read `bad/fact-forbids-the-bug/` before you write your first fact.
 
 ## References
 
