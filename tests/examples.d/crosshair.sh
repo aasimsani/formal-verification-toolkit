@@ -17,7 +17,7 @@ t "bad/nondeterministic-code-caps-the-result: holds on a function that is wrong 
 t "fv-crosshair exits 3 when uv is missing" 3 "^UNAVAILABLE crosshair" \
   env PATH="$S:/usr/bin:/bin" fv-crosshair "$A/good/split-evenly/money.crosshair"
 
-CH_BAD="$(mktemp -d -t fv-crosshair-bad)"
+CH_BAD="$(mktemp -d)"
 printf 'def broken(\n' > "$CH_BAD/broken.py"
 printf 'check Broken broken.broken expect holds\n' > "$CH_BAD/broken.crosshair"
 t "fv-crosshair reports a broken target as an error, never as the violation a check expects" 1 "^ERROR check Broken:" \
