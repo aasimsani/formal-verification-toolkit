@@ -50,6 +50,7 @@ The two core jars install with `fv-install`. Every other tool installs when it i
 | `fv-dst` | Writes a deterministic simulator in which one seeded scheduler owns task order, message delay, loss, duplication, crash and restart, so a seed replays a failure exactly. |
 | `fv-xstate` | Generates the shortest path to every reachable state of an XState machine and replays each path on the real implementation. |
 | `fv-tamarin` | Writes and checks a Tamarin theory of a security protocol against an active attacker, and pairs every safety lemma with a lemma that shows the protocol can run. |
+| `fv-sqlequiv` | Checks two SQL queries for equal results on every small table up to a bound, with NULLs and duplicate rows, on SQLite. |
 
 ## Scripts
 
