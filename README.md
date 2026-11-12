@@ -46,6 +46,7 @@ The two core jars install with `fv-install`. Every other tool installs when it i
 | `fv-shuttle` | Runs real Rust concurrent code under Shuttle's randomized scheduler and Loom's exhaustive one, so an interleaving that loses an update or deadlocks is found and replayed. |
 | `fv-stateright` | Checks a Rust actor protocol by exploring every state that its `Model` implementation can reach, so the model is the code. |
 | `fv-cedar` | Validates Cedar policies against their schema and checks each declared allow or deny decision, so a change that widens access fails. |
+| `fv-kani` | Checks a Rust function for panics, overflow and out-of-bounds indexing on every input within an unwind bound, with a cover statement as the witness. |
 
 ## Scripts
 
