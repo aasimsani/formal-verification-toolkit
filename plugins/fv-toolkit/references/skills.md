@@ -21,5 +21,6 @@ Each of these tools installs when it is named. Load its skill first, because the
 | Do two versions of a pure Python function ever disagree, or does one small pure function break its own contract on some input? | CrossHair | `fv-crosshair` | `fv-install crosshair` |
 | Can real Rust code deadlock or lose an update under some thread interleaving? | Shuttle and Loom | `fv-shuttle` | `fv-install shuttle` |
 | Does a protocol that is written in Rust hold under every message interleaving, when the checked model must be the Rust code itself? | Stateright | `fv-stateright` | `fv-install stateright` |
+| Does a Cedar policy set allow and deny what it should, and does a policy change widen access? | Cedar | `fv-cedar` | `fv-install cedar` |
 
 A tool that is not in this file has no skill yet. Read `tools.md`, say that no skill covers the tool, and follow the router's workflow from the tool's own documentation.
