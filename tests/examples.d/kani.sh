@@ -25,7 +25,7 @@ t "bad/narrow-assume: the narrowed check passes, which is the symptom" 0 'PASS k
 # Invariants of the fv-kani wrapper itself, not of an example. These run
 # even when cargo kani is not installed, because they only check PATH.
 t "fv-kani exits 3 when cargo or rustup is missing" 3 '^UNAVAILABLE kani' \
-  env PATH=/usr/bin:/bin fv-kani somename
+  env PATH="$S:/usr/bin:/bin" fv-kani somename
 t "fv-kani reports a usage error for the wrong number of arguments" 2 'Usage: fv-kani' \
   fv-kani
 
