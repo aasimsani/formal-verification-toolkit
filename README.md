@@ -53,6 +53,7 @@ The two core jars install with `fv-install`. Every other tool installs when it i
 | `fv-sqlequiv` | Checks two SQL queries for equal results on every small table up to a bound, with NULLs and duplicate rows, on SQLite. |
 
 Apalache has no skill of its own. `fv-install apalache` adds the symbolic checker to `fv-tlaplus`, which uses it when TLC cannot enumerate the states or when an invariant must be shown inductive.
+| `fv-elle` | Checks a recorded history of transactions against an isolation level with Elle and names the anomaly, such as G1c or G-single, with the cycle that shows it. |
 
 ## Scripts
 

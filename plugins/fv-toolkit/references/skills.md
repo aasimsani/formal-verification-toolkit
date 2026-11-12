@@ -28,5 +28,6 @@ Each of these tools installs when it is named. Load its skill first, because the
 | Can an active attacker forge, replay or redirect messages in a security protocol? | Tamarin | `fv-tamarin` | `fv-install tamarin` |
 | Do two SQL queries return the same rows on every table, with NULLs and duplicates included? | Bounded check on SQLite | `fv-sqlequiv` | `fv-install sqlequiv` |
 | Does a TLA+ invariant hold when TLC cannot enumerate the states, such as wide integer ranges, or is an invariant inductive? | Apalache | `fv-tlaplus`, with its `references/apalache.md` | `fv-install apalache` |
+| Does a recorded history of database transactions break an isolation level such as serializability or snapshot isolation? | Elle | `fv-elle` | `fv-install elle` |
 
 A tool that is not in this file has no skill yet. Read `tools.md`, say that no skill covers the tool, and follow the router's workflow from the tool's own documentation.
