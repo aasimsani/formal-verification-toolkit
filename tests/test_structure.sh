@@ -24,4 +24,14 @@ broken="$(find "$P" -name '*.md' 2>/dev/null | while read -r file; do
 done)"
 check "every relative link resolves${broken:+ (broken: $broken)}" '[ -z "$broken" ]'
 
+# A skill that the router cannot find is never loaded for the question it answers.
+unlisted="$(for dir in "$P"/skills/fv-*/; do name="$(basename "$dir")"
+  [ "$name" = fv-maintain ] || grep -q "\`$name\`" "$P/references/skills.md" || printf "%s " "$name"; done)"
+check "every tool skill has a row in references/skills.md${unlisted:+ (missing: $unlisted)}" "[ -z \"\$unlisted\" ]"
+
+# An on-demand tool without example checks is never verified in CI.
+untested="$(for inst in "$P"/scripts/installers/*; do [ -e "$inst" ] || continue; name="$(basename "$inst")"
+  [ -f "$P/../../tests/examples.d/$name.sh" ] || printf "%s " "$name"; done)"
+check "every installer has a tests/examples.d file${untested:+ (missing: $untested)}" "[ -z \"\$untested\" ]"
+
 exit $fail

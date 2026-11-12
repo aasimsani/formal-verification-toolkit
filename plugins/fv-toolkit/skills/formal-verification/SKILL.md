@@ -54,12 +54,14 @@ For each target, list the commits that fixed a bug in its code. Step 6 replays e
 
 ### 2. Pick the tool by the question
 
-| The question is | Tool | Skill |
+| The question is | Family | Default tool |
 |---|---|---|
-| Can a bad ordering happen? Concurrency, retries, crashes, message loss | TLA+ with TLC | `fv-tlaplus` |
-| Can the data or the configuration reach an invalid shape? Relations, permissions, schemas | Alloy 6 | `fv-alloy` |
-| Is this code correct for every input? Functions, calculations, state machines in one process | Hypothesis | `fv-hypothesis` |
-| Does the running system obey the model? | The link techniques in `${CLAUDE_PLUGIN_ROOT}/references/linking.md` | the skill of the model's tool |
+| Can a bad ordering happen? Concurrency, retries, crashes, message loss | A behavioural model checker | TLA+ with TLC |
+| Can the data or the configuration reach an invalid shape? Relations, permissions, schemas, rules | A relational or constraint solver | Alloy 6 |
+| Is this code correct for every input? Functions, calculations, state machines in one process | Checks on the real code | Hypothesis |
+| Does the running system obey the model? | Conformance | The link techniques in `${CLAUDE_PLUGIN_ROOT}/references/linking.md` |
+
+`${CLAUDE_PLUGIN_ROOT}/references/skills.md` lists every tool that has a skill, the question each one answers and the command that installs it. Read it, pick the row that matches the claim, and load that skill. A tool is installed on demand, so a missing tool is one `fv-install <name>` away.
 
 Then find the architecture pattern in `${CLAUDE_PLUGIN_ROOT}/references/catalog/INDEX.md` and read only the catalog file that holds it. The row gives the failure that the model must be able to produce, the abstraction level, the properties and the link to code. When no pattern fits, say so and use the four questions alone.
 
@@ -71,7 +73,7 @@ Prefer the cheapest rung that can produce the failure:
 4. Conformance between the model and the code.
 5. Proof, only where a bug is unacceptable.
 
-This version ships skills for TLA+, Alloy and Hypothesis. For any other tool, read `${CLAUDE_PLUGIN_ROOT}/references/tools.md`, say that no skill covers the tool yet, and follow this same workflow from the tool's own documentation. When the user names a tool, use it and report what it leaves unchecked.
+For a tool that `skills.md` does not list, read `${CLAUDE_PLUGIN_ROOT}/references/tools.md`, say that no skill covers the tool yet, and follow this same workflow from the tool's own documentation. When the user names a tool, use it and report what it leaves unchecked.
 
 Factory, Builder, Adapter, Decorator, Facade, Proxy, Singleton and DI containers have no invariant of their own. Say so and verify only the contract of what they wrap.
 
@@ -146,6 +148,7 @@ Write the report as `${CLAUDE_PLUGIN_ROOT}/references/report.md` describes. Keep
 |---|---|
 | `${CLAUDE_PLUGIN_ROOT}/references/claims.md` | Step 1, always |
 | `${CLAUDE_PLUGIN_ROOT}/references/catalog/INDEX.md` | Step 2, to find the pattern |
+| `${CLAUDE_PLUGIN_ROOT}/references/skills.md` | Step 2, to find the skill and the install command of a tool |
 | `${CLAUDE_PLUGIN_ROOT}/references/tools.md` | A tool without a skill, or a tool the catalog names that is not core |
 | `${CLAUDE_PLUGIN_ROOT}/references/properties.md` | Step 3 |
 | `${CLAUDE_PLUGIN_ROOT}/references/faults.md` | Steps 1 and 4 |

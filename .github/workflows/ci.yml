@@ -37,4 +37,69 @@ jobs:
       - name: Scripts
         run: bash tests/test_scripts.sh
       - name: Examples
-        run: bash tests/test_examples.sh
+        # FV_REQUIRE=1 turns a skipped tool into a failure, so this step cannot pass by skipping.
+        run: FV_REQUIRE=1 bash tests/test_examples.sh tlaplus hypothesis alloy
+
+  # Each on-demand tool gets its own job. A pull request runs only the tools
+  # whose files it changed, and a push to main runs every tool.
+  changed:
+    name: pick the on-demand tools to check
+    runs-on: ubuntu-latest
+    outputs:
+      tools: ${{ steps.pick.outputs.tools }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: pick
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          all="$(ls plugins/fv-toolkit/scripts/installers 2>/dev/null | tr '\n' ' ')"
+          pick="$all"
+          if [ "$EVENT" = pull_request ]; then
+            changed="$(git diff --name-only "$BASE"...HEAD)"
+            # A change to a shared script or to this workflow reruns every tool.
+            if ! echo "$changed" | grep -qE '^plugins/fv-toolkit/scripts/fv-|^tests/test_examples\.sh$|^\.github/workflows/'; then
+              pick=""
+              for tool in $all; do
+                if echo "$changed" | grep -qE "scripts/installers/$tool\$|scripts/fv-$tool\$|tests/examples\.d/$tool\.sh\$|skills/fv-$tool/"; then
+                  pick="$pick $tool"
+                fi
+              done
+            fi
+          fi
+          if [ -z "$(echo "$pick" | tr -d ' ')" ]; then
+            echo "tools=[]" >> "$GITHUB_OUTPUT"
+          else
+            echo "tools=$(printf '%s\n' $pick | jq -R . | jq -cs .)" >> "$GITHUB_OUTPUT"
+          fi
+
+  on-demand:
+    name: ${{ matrix.tool }}
+    needs: changed
+    if: needs.changed.outputs.tools != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        tool: ${{ fromJson(needs.changed.outputs.tools) }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: astral-sh/setup-uv@v10.3.3
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/fv
+          key: fv-${{ matrix.tool }}-${{ hashFiles('plugins/fv-toolkit/scripts/fv-install', format('plugins/fv-toolkit/scripts/installers/{0}', matrix.tool)) }}
+      - name: Install the core jars
+        run: plugins/fv-toolkit/scripts/fv-install
+      - name: Install ${{ matrix.tool }}
+        run: plugins/fv-toolkit/scripts/fv-install ${{ matrix.tool }}
+      - name: Examples
+        run: FV_REQUIRE=1 bash tests/test_examples.sh ${{ matrix.tool }}

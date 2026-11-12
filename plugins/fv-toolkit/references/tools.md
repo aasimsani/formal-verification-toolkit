@@ -1,6 +1,6 @@
 # Tools
 
-This version ships a skill for three of the nine core tools: TLA+, Alloy and Hypothesis. For any other tool in this file, say that no skill covers it yet, follow the same loop from the tool's own documentation, and install it as `setup.md` describes.
+`skills.md` lists the tools that have a skill. For any other tool in this file, say that no skill covers it yet, follow the same loop from the tool's own documentation, and install it as `setup.md` describes.
 
 ## Core toolkit
 

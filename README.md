@@ -27,13 +27,17 @@ plugins/fv-toolkit/scripts/fv-install
 
 The router reads its pattern catalogs, property families and fault models from `plugins/fv-toolkit/references/`. `docs/spec.md` is the design document that those files come from.
 
+## Tools on demand
+
+The two core jars install with `fv-install`. Every other tool installs when it is named, for example `fv-install z3`. `fv-install --list` prints every tool the script can install, and `fv-install --check <tool>` reports whether one is ready without installing it. `docs/adding-a-tool.md` is the contract for a new tool.
+
 ## Scripts
 
 Every script prints one verdict per line and documents its exit codes in `--help`.
 
 | Script | What it does |
 |---|---|
-| `fv-install` | Downloads TLC 1.7.4 and Alloy 6.2.0 into `~/.cache/fv` and verifies each jar by SHA-256. |
+| `fv-install` | Downloads TLC 1.7.4 and Alloy 6.2.0 into `~/.cache/fv` and verifies each jar by SHA-256. A named on-demand tool runs its installer from `scripts/installers/`. |
 | `fv-tlc` | Runs TLC on each config and compares the outcome with the config's `\* expect:` header. |
 | `fv-alloy` | Runs every command of an Alloy model and compares each result with its `expect` clause. |
 | `fv-mutate` | Plants each bug from a `.mutations` file in a copy and confirms that the check fails. |
@@ -47,14 +51,15 @@ A tool that is not installed makes a script exit 3 and print `UNAVAILABLE`. That
 plugins/fv-toolkit/scripts/fv-install
 bash tests/test_scripts.sh
 bash tests/test_structure.sh
-bash tests/test_examples.sh
+bash tests/test_examples.sh            # every tool that is installed
+bash tests/test_examples.sh alloy      # one tool
 ```
 
 The Hypothesis examples need `uv`, which supplies Hypothesis and pytest for the run. `test_scripts.sh` runs the real TLC and Alloy jars against the fixtures in `tests/fixtures/`. `test_structure.sh` checks that every file a skill names exists. `test_examples.sh` runs every shipped example: a good example must meet its declared outcomes and detect its mutations, and a bad example must produce the symptom its README states.
 
 ## CI
 
-`.github/workflows/ci.yml` installs the pinned jars and runs the three suites on every pull request and on every push to `main`.
+`.github/workflows/ci.yml` installs the pinned jars and runs the three suites on every pull request and on every push to `main`. Each on-demand tool has its own job. A pull request runs the jobs of the tools whose files it changed, and a push to `main` runs every tool.
 
 ## License
 

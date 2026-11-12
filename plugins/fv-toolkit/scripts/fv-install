@@ -1,16 +1,28 @@
 #!/usr/bin/env bash
-# Install the pinned checkers into $FV_HOME and verify each download by SHA-256.
+# Install checkers and verify them.
 #
-# Usage: fv-install [tla|alloy]...     With no argument, both tools are installed.
+# Usage: fv-install [--check] [<tool>...]
+#        fv-install --list
+#
+# With no tool, the two core jars are installed: tla and alloy. Every other
+# tool is installed on demand, when it is named. Its installer is the
+# executable scripts/installers/<tool>.
 #
 # The script prints "READY <tool> <path>" for each tool it installed or found.
-# It prints "UNAVAILABLE <tool>: <remedy>" and exits 3 when Java does not run,
-# a download fails, or a checksum differs from the pin. A usage error exits 2.
-# A tool that is UNAVAILABLE was not checked, which is neither a pass nor a failure.
+# It prints "UNAVAILABLE <tool>: <remedy>" and exits 3 when a prerequisite is
+# missing, a download fails, or a checksum differs from the pin. A usage error
+# exits 2. A tool that is UNAVAILABLE was not checked, which is neither a pass
+# nor a failure.
+#
+# --check reports the state of each tool and installs nothing.
+# --list prints the name of every tool this script can install.
+#
+# Environment: FV_HOME (default ~/.cache/fv), JAVA (default java).
 set -uo pipefail
 
-FV_HOME="${FV_HOME:-$HOME/.cache/fv}"
+export FV_HOME="${FV_HOME:-$HOME/.cache/fv}"
 JAVA="${JAVA:-java}"
+INSTALLERS="${FV_INSTALLERS:-$(cd "$(dirname "$0")" && pwd)/installers}"
 
 # To move a pin, change the version and the checksum together.
 TLA_VERSION=1.7.4
@@ -36,6 +48,7 @@ unavailable() {
 fetch() {
   local tool=$1 file="$FV_HOME/$2" url=$3 want=$4
   if [ ! -f "$file" ] || [ "$(sha256 "$file")" != "$want" ]; then
+    [ "$check_only" = 1 ] && unavailable "$tool" "not installed; run fv-install $tool"
     mkdir -p "$FV_HOME"
     if ! curl -fsSL -o "$file.part" "$url"; then
       rm -f "$file.part"
@@ -50,17 +63,46 @@ fetch() {
   echo "READY $tool $file"
 }
 
-"$JAVA" -version >/dev/null 2>&1 ||
-  unavailable java "install a JDK 17 or later, or set JAVA to its java binary"
+need_java() {
+  "$JAVA" -version >/dev/null 2>&1 ||
+    unavailable java "install a JDK 17 or later, or set JAVA to its java binary"
+}
+
+usage() {
+  echo "usage: fv-install [--check] [<tool>...] | fv-install --list" >&2
+  exit 2
+}
+
+check_only=0
+if [ "${1:-}" = "--list" ]; then
+  echo tla
+  echo alloy
+  [ -d "$INSTALLERS" ] && ls "$INSTALLERS"
+  exit 0
+fi
+if [ "${1:-}" = "--check" ]; then
+  check_only=1
+  shift
+fi
 
 [ $# -eq 0 ] && set -- tla alloy
 for tool in "$@"; do
   case "$tool" in
-    tla) fetch tla tla2tools.jar "$TLA_URL" "$TLA_SHA256" ;;
-    alloy) fetch alloy alloy.jar "$ALLOY_URL" "$ALLOY_SHA256" ;;
+    tla)
+      need_java
+      fetch tla tla2tools.jar "$TLA_URL" "$TLA_SHA256"
+      ;;
+    alloy)
+      need_java
+      fetch alloy alloy.jar "$ALLOY_URL" "$ALLOY_SHA256"
+      ;;
+    -*) usage ;;
     *)
-      echo "usage: fv-install [tla|alloy]..." >&2
-      exit 2
+      [ -x "$INSTALLERS/$tool" ] || usage
+      # The installer prints its own READY or UNAVAILABLE line, and its exit code is the verdict.
+      if [ "$check_only" = 1 ]; then "$INSTALLERS/$tool" --check; else "$INSTALLERS/$tool"; fi
+      code=$?
+      [ "$code" -eq 0 ] || exit "$code"
       ;;
   esac
 done

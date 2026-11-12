@@ -37,6 +37,32 @@ t "fv-install rejects a download whose checksum differs" 3 '^UNAVAILABLE tla: ch
 t "fv-install leaves no jar behind after a rejected download" 0 '^0$' \
   sh -c "find '$T/home' -name '*.jar*' 2>/dev/null | wc -l | tr -d ' '"
 
+# On-demand tools: fv-install hands any other name to scripts/installers/<name>.
+mkdir -p "$T/inst"
+printf "#!/usr/bin/env bash\n[ \"\${1:-}\" = --check ] && { echo \"UNAVAILABLE good: not installed\"; exit 3; }\necho \"READY good /opt/good\"\n" > "$T/inst/good"
+printf "#!/usr/bin/env bash\necho \"UNAVAILABLE bad: the download failed\"\nexit 3\n" > "$T/inst/bad"
+chmod +x "$T/inst/good" "$T/inst/bad"
+t "fv-install runs the installer of an on-demand tool" 0 "^READY good /opt/good" \
+  env FV_INSTALLERS="$T/inst" fv-install good
+t "fv-install never reports READY for an on-demand tool whose installer failed" 3 "^UNAVAILABLE bad" \
+  env FV_INSTALLERS="$T/inst" fv-install bad
+t "fv-install --check asks an installer for its state and installs nothing" 3 "^UNAVAILABLE good: not installed" \
+  env FV_INSTALLERS="$T/inst" fv-install --check good
+t "fv-install --check does not download a missing core jar" 3 "^UNAVAILABLE tla" \
+  env FV_HOME="$T/nohome" fv-install --check tla
+t "fv-install --check leaves no file behind" 0 "^0$" \
+  sh -c "find \"$T/nohome\" -type f 2>/dev/null | wc -l | tr -d \" \""
+t "fv-install rejects a name that has no installer" 2 "usage" \
+  env FV_INSTALLERS="$T/inst" fv-install nosuchtool
+t "fv-install --list names the core tools and the on-demand tools" 0 "^good$" \
+  env FV_INSTALLERS="$T/inst" fv-install --list
+
+# The example runner must not pass by skipping when a tool is required.
+t "test_examples skips a tool that is not installed" 0 "^skip - tlaplus" \
+  env FV_HOME="$T/nohome" bash "$ROOT/tests/test_examples.sh" tlaplus
+t "test_examples fails a missing tool when FV_REQUIRE=1" 1 "^FAIL - tlaplus" \
+  env FV_HOME="$T/nohome" FV_REQUIRE=1 bash "$ROOT/tests/test_examples.sh" tlaplus
+
 # --- fv-tlc ----------------------------------------------------------------
 t "fv-tlc passes when every config matches its expect header" 0 'PASS Witness.cfg: violated NeverMax' \
   fv-tlc "$F/tla/Counter.tla"

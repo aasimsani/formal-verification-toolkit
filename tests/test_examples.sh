@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
-# Run with: bash tests/test_examples.sh
+# Run with: bash tests/test_examples.sh [tool ...]
+#
 # Invariants of the shipped examples. A good example meets its declared
 # outcomes and detects its mutations. A bad example produces the symptom that
-# its README states. Run plugins/fv-toolkit/scripts/fv-install once first.
+# its README states.
+#
+# Each tool has one file, tests/examples.d/<tool>.sh. With no argument, every
+# file runs. A file starts with "# needs: <command>". When that command fails,
+# the tool is not installed and the file is skipped. FV_REQUIRE=1 turns a skip
+# into a failure, so CI cannot pass by skipping.
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -21,62 +27,33 @@ t() {
     echo "ok   - $name"
   else
     echo "FAIL - $name (exit $rc, wanted $want and /$pat/)"
-    echo "$out" | tail -8 | sed 's/^/       /'
+    echo "$out" | tail -8 | sed "s/^/       /"
     fail=1
   fi
 }
 
-# --- fv-tlaplus ------------------------------------------------------------
-G="$K/fv-tlaplus/examples/good"
-B="$K/fv-tlaplus/examples/bad"
+if [ $# -eq 0 ]; then
+  set -- $(cd "$ROOT/tests/examples.d" && ls *.sh | sed "s/\.sh$//")
+fi
 
-t "refund-race: every config meets its declared outcome" 0 'PASS CheckThenRefund.cfg: violated NeverOverRefund' \
-  fv-tlc "$G/refund-race/RefundRace.tla"
-t "refund-race: every planted bug is detected" 0 'uncovered=0' \
-  fv-mutate "$G/refund-race/RefundRace.mutations"
-
-t "idempotent-receiver: every config meets its declared outcome" 0 'PASS EffectThenRecord.cfg: violated AtMostOnce' \
-  fv-tlc "$G/idempotent-receiver/IdempotentReceiver.tla"
-t "idempotent-receiver: every planted bug is detected" 0 'uncovered=0' \
-  fv-mutate "$G/idempotent-receiver/IdempotentReceiver.mutations"
-
-t "bad/merged-atomicity: the merged model passes, which is the symptom" 0 'PASS Merged.cfg: holds' \
-  fv-tlc "$B/merged-atomicity/MergedRefund.tla"
-t "bad/liveness-without-fairness: TLC answers with a stuttering counterexample" 0 'PASS NoFairness.cfg: liveness' \
-  fv-tlc "$B/liveness-without-fairness/Worker.tla"
-t "bad/unreachable-state: the invariant holds and only the witness exposes it" 1 'FAIL Witness.cfg: expected violated NeverCommitted, got holds' \
-  fv-tlc "$B/unreachable-state/Commit.tla"
-
-# --- fv-hypothesis ---------------------------------------------------------
-# These examples need Hypothesis and pytest. uv supplies both for the run.
-H="$K/fv-hypothesis/examples"
-py() { uv run --quiet --with hypothesis --with pytest "$@"; }
-
-t "allocation: every planted bug is detected" 0 'uncovered=0' \
-  py fv-mutate "$H/allocation/allocate.mutations"
-t "lru-cache: the state machine detects every planted bug" 0 'uncovered=0' \
-  py fv-mutate "$H/lru-cache/lru.mutations"
-t "allocation/bad tautology: the planted bug is missed, which is the symptom" 1 '^MISSED the leftover cents are dropped' \
-  py fv-mutate "$H/allocation/bad_tautology.mutations"
-t "allocation/bad vacuous assume: the planted bug is missed, which is the symptom" 1 '^MISSED the leftover cents are dropped' \
-  py fv-mutate "$H/allocation/bad_vacuous_assume.mutations"
-t "allocation/bad weak property: every planted bug is missed, which is the symptom" 1 'detected=0 missed=3' \
-  py fv-mutate "$H/allocation/bad_weak_property.mutations"
-
-# --- fv-alloy --------------------------------------------------------------
-A="$K/fv-alloy/examples"
-
-t "rbac: every command meets its expectation" 0 "PASS check NoEscalationWhenAnyoneAdmins: SAT" \
-  fv-alloy "$A/good/rbac/rbac.als"
-t "rbac: every planted bug is detected" 0 "uncovered=0" \
-  fv-mutate "$A/good/rbac/rbac.mutations"
-t "bad/overconstraint: the check passes on a model with no instance, and the run exposes it" 1 "FAIL run SomeUsers: expected SAT, got UNSAT" \
-  fv-alloy "$A/bad/overconstraint/overconstrained.als"
-t "bad/overconstraint: the false claim passes, which is the symptom" 1 "PASS check NobodyHoldsARole: UNSAT" \
-  fv-alloy "$A/bad/overconstraint/overconstrained.als"
-t "bad/vacuous-in: the weak assertion passes and the strong one finds the empty case" 0 "PASS check EveryUserHoldsAnApprovedRole: SAT" \
-  fv-alloy "$A/bad/vacuous-in/approved.als"
-t "bad/fact-forbids-the-bug: the claim passes because a fact assumes it, which is the symptom" 0 "PASS check NoEscalation: UNSAT" \
-  fv-alloy "$A/bad/fact-forbids-the-bug/rbac_fact.als"
+for tool in "$@"; do
+  file="$ROOT/tests/examples.d/$tool.sh"
+  if [ ! -f "$file" ]; then
+    echo "FAIL - $tool: tests/examples.d/$tool.sh does not exist"
+    fail=1
+    continue
+  fi
+  needs="$(sed -n "s/^# needs: //p" "$file" | head -1)"
+  if [ -n "$needs" ] && ! bash -c "$needs" >/dev/null 2>&1; then
+    if [ "${FV_REQUIRE:-0}" = 1 ]; then
+      echo "FAIL - $tool: \"$needs\" failed and FV_REQUIRE=1"
+      fail=1
+    else
+      echo "skip - $tool: \"$needs\" failed"
+    fi
+    continue
+  fi
+  . "$file"
+done
 
 exit $fail
