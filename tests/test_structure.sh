@@ -29,6 +29,11 @@ unlisted="$(for dir in "$P"/skills/fv-*/; do name="$(basename "$dir")"
   [ "$name" = fv-maintain ] || grep -q "\`$name\`" "$P/references/skills.md" || printf "%s " "$name"; done)"
 check "every tool skill has a row in references/skills.md${unlisted:+ (missing: $unlisted)}" "[ -z \"\$unlisted\" ]"
 
+# A skill without a routing case is never checked for being picked in the scenario it fits.
+unrouted="$(for dir in "$P"/skills/fv-*/; do name="$(basename "$dir")"
+  [ "$name" = fv-maintain ] || grep -qs "(?:$name)" "$P"/evals/route/*/graders/right-skill.md || printf "%s " "$name"; done)"
+check "every tool skill has a routing case in evals/route${unrouted:+ (missing: $unrouted)}" "[ -z \"\$unrouted\" ]"
+
 # An on-demand tool without example checks is never verified in CI.
 untested="$(for inst in "$P"/scripts/installers/*; do [ -e "$inst" ] || continue; name="$(basename "$inst")"
   [ -f "$P/../../tests/examples.d/$name.sh" ] || printf "%s " "$name"; done)"

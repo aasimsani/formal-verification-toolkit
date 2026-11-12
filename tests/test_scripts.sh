@@ -216,6 +216,12 @@ EOF
 t "fv-mutate leaves Cargo build output out of the copy" 0 '^DETECTED the value goes bad' \
   fv-mutate "$T/crate/crate.mutations"
 
+copy tla venvroot
+mkdir -p "$T/venvroot/.venv" && : > "$T/venvroot/.venv/marker"
+printf 'run sh -c '"'"'test -f "$FV_ROOT/.venv/marker" && test ! -e .venv'"'"'\nfile Counter.tla\n' > "$T/venvroot/Counter.mutations"
+t "fv-mutate gives the run command the original root as FV_ROOT, because the copy leaves .venv out" 0 '^SUMMARY' \
+  fv-mutate "$T/venvroot/Counter.mutations"
+
 t "the scripts leave the fixture files unchanged" 0 '^same$' \
   sh -c "[ '$before' = '$(tree_sum)' ] && echo same"
 

@@ -27,9 +27,9 @@ plugins/fv-toolkit/scripts/fv-install
 | Skill | What it does |
 |---|---|
 | `formal-verification` | The router. It triages the claims, picks a tool by the question, freezes the properties, and runs the loop: model, check, plant bugs, replay each counterexample in the code, report. |
-| `fv-tlaplus` | Writes and checks a TLA+ model with TLC: one action per atomic step, one config per design with a declared outcome, witnesses and mutations. It ships two checked examples and three reproduced anti-patterns. |
-| `fv-hypothesis` | Writes property-based and stateful tests on real Python code, and requires each property to fail on a planted bug in that code. It ships one test file that detects every planted bug beside three that detect none. |
-| `fv-alloy` | Writes and checks an Alloy 6 model of structure: permissions, ownership, isolation, compatibility. Every check is paired with a satisfiable run, and the check of a rejected design must find its counterexample. |
+| `fv-tlaplus` | Writes and checks a TLA+ model with TLC: one action per atomic step, one config per design with a declared outcome, witnesses and mutations. It ships thirteen checked templates, one per pattern, and eight reproduced anti-patterns. With `fv-install apalache` it also checks whether an invariant is inductive. |
+| `fv-hypothesis` | Writes property-based and stateful tests on real Python code, and requires each property to fail on a planted bug in that code. It ships one test file that detects every planted bug beside three that detect none, a stateful test, and three more reproduced anti-patterns. |
+| `fv-alloy` | Writes and checks an Alloy 6 model of structure: permissions, ownership, isolation, compatibility. Every check is paired with a satisfiable run, and the check of a rejected design must find its counterexample. It ships six checked models and four reproduced anti-patterns. |
 | `fv-maintain` | Brings models back in line after the code changed, and says whether each failure is drift in the model or a bug in the code. |
 
 The router reads its pattern catalogs, property families and fault models from `plugins/fv-toolkit/references/`. `docs/spec.md` is the design document that those files come from.
@@ -70,6 +70,8 @@ Every script prints one verdict per line and documents its exit codes in `--help
 | `fv-pin` | Records a SHA-256 for each confirmed property and declared outcome, and reports any that changed. |
 | `fv-drift` | Reports whether the code a model covers has changed since the model's sync commit. |
 
+An on-demand tool may add its own wrapper, such as `fv-z3` or `fv-kani`, and the tool's skill documents it.
+
 A tool that is not installed makes a script exit 3 and print `UNAVAILABLE`. That result means the model was not checked. It is neither a pass nor a failure.
 
 ## Tests
@@ -83,6 +85,37 @@ bash tests/test_examples.sh alloy      # one tool
 ```
 
 The Hypothesis examples need `uv`, which supplies Hypothesis and pytest for the run. `test_scripts.sh` runs the real TLC and Alloy jars against the fixtures in `tests/fixtures/`. `test_structure.sh` checks that every file a skill names exists. `test_examples.sh` runs every shipped example: a good example must meet its declared outcomes and detect its mutations, and a bad example must produce the symptom its README states.
+
+## Evals
+
+`plugins/fv-toolkit/evals/` holds 37 cases for `claude plugin eval`.
+
+| Group | Cases | A case passes when |
+|---|---|---|
+| `route/`, one or two scenarios per tool | 20 | The skill of the fitting tool loads, no other tool's skill loads, the reply names the tool, and the plan carries one rule that the tool's skill teaches |
+| `route/`, scenarios beside another tool's territory | 7 | The fitting skill loads and the neighbouring skill does not. A commit protocol in C# goes to TLA+ and not to Stateright, for example |
+| `route/low-value-target` | 1 | No tool skill loads for a factory and an adapter, and the reply names an ordinary test |
+| `no-trigger/` | 4 | No skill of this plugin loads for a git question, a unit test, a type error or a flaky CI job |
+| `effect/` | 5 | In a workspace with a planted bug, the agent runs the real checker, shows that its check fails on a planted change, and reports the counterexample without calling a bounded check a proof |
+
+The effect cases cover TLA+, Alloy, Hypothesis, the SQL equivalence check and deterministic simulation. The other tools have routing cases only. No scenario names a tool unless the user's own system is written in it, such as Cedar policies or an XState machine.
+
+```bash
+FV_EVAL_JARS=~/.cache/fv claude plugin eval plugins/fv-toolkit --trust-plugin --scaffold \
+  --allow-tools Bash Write Edit --ablation none --runs 1 --no-publish
+```
+
+The sandbox of a run has no network, so the scaffold of an effect case copies the pinned jars from `FV_EVAL_JARS`. `tests/test_structure.sh` fails when a tool skill has no routing case.
+
+The run of 2026-11-12 on Claude Code 2.1.322 took one sample per case:
+
+| Group | Cases that passed every grader | Cost |
+|---|---|---|
+| Routing | 28 of 28 | $7.99 |
+| No trigger | 4 of 4 | $0.47 |
+| Effect | 5 of 5 | $3.67 |
+
+One sample per case does not measure variance. Run with `--runs 3` before you rely on a single case.
 
 ## CI
 

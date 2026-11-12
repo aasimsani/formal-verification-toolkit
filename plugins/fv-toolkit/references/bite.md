@@ -49,7 +49,7 @@ Read the verdicts this way:
 | `UNCOVERED` | No mutation detects this property. Add one |
 | `BRITTLE` | A harmless edit turned the check red. Find what the check really depends on |
 
-For a property test, the mutation edits the code under test, and the `run` line calls the test runner. Set `root` to the project directory, so the copy holds both the code and the tests.
+For a property test, the mutation edits the code under test, and the `run` line calls the test runner. Set `root` to the project directory, so the copy holds both the code and the tests. The copy leaves out `.git`, `.venv` and `node_modules`. When the test runner lives in the project's own environment, name it through `FV_ROOT`, which holds the path of the original root: `run "$FV_ROOT/.venv/bin/python" -m pytest -q tests`.
 
 ## Not vacuous
 

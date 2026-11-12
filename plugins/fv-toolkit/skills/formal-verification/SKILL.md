@@ -1,6 +1,6 @@
 ---
 name: formal-verification
-description: "Checks a design or a piece of code with the cheapest formal tool that can produce the failure, then proves that the check can fail. Routes by the question: a TLA+ model for orderings, crashes and retries, an Alloy model for relations, permissions and schemas, Hypothesis properties for functions over all inputs. Use for formal verification, model checking, TLA+, Alloy, property-based or model-based testing, \"can this race\", \"prove this invariant\", or a review of claims such as never, always, at most once and exactly once in a PR or a design doc. Not for ordinary unit tests, linting or type checking."
+description: "Decides which kind of check can settle a correctness question, and then runs it: a model checker for orderings, crashes and retries, a model finder for permissions and data shapes, property tests for functions over all inputs, and the other tools in its registry. Use whenever someone asks whether something can ever happen or always holds, such as a double charge, a lost update, a race between two jobs, a crash between two writes, a leaked permission, or a calculation that is wrong for some input. Use it also when they ask which test, model or proof would give certainty, when a PR or a design doc claims never, always, at most once or exactly once, and before you recommend TLA+, Alloy, Z3, property-based testing or any other formal tool from memory, because this skill holds the selection rules and knows which tools are installed. Not for ordinary unit tests, linting, type errors or general debugging."
 ---
 
 # Formal verification
@@ -65,6 +65,10 @@ For each target, list the commits that fixed a bug in its code. Step 6 replays e
 | Does the running system obey the model? | Conformance | The link techniques in `${CLAUDE_PLUGIN_ROOT}/references/linking.md` |
 
 `${CLAUDE_PLUGIN_ROOT}/references/skills.md` lists every tool that has a skill, the question each one answers and the command that installs it. Read it, pick the row that matches the claim, and load that skill. A tool is installed on demand, so a missing tool is one `fv-install <name>` away.
+
+Load the tool's skill before you recommend the tool, also when the user asks only which check to use. The skill states what the tool can express, what a pass means and what the check costs. A recommendation without it comes from memory.
+
+Load it with the Skill tool, by its name, such as `fv-tlaplus`. Do not read its `SKILL.md` with a file tool or with `cat`, because the Skill tool also resolves the paths that the skill refers to.
 
 Then find the architecture pattern in `${CLAUDE_PLUGIN_ROOT}/references/catalog/INDEX.md` and read only the catalog file that holds it. The row gives the failure that the model must be able to produce, the abstraction level, the properties and the link to code. When no pattern fits, say so and use the four questions alone.
 

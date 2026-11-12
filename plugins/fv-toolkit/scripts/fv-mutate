@@ -22,7 +22,11 @@ with # is a comment.
   + <text>
 
 Each edit is applied to a temporary copy of the root, so the original files
-never change. The script prints one line per block:
+never change. The copy leaves out .git, .venv and node_modules. The run command
+gets the path of the original root in FV_ROOT, so it can name an interpreter
+there, as in `run "$FV_ROOT/.venv/bin/python" -m pytest -q tests`.
+
+The script prints one line per block:
 
   DETECTED <label>: <the failing line>   the check failed and named the property
   MISSED <label>                         the check still passed
@@ -127,7 +131,9 @@ def run_check(command, root, block=None):
             if source.count(old) != 1:
                 return None, f"the text to replace occurs {source.count(old)} times in {block.file}"
             target.write_text(source.replace(old, "\n".join(block.new)))
-        env = {**os.environ, "PATH": f"{Path(__file__).resolve().parent}{os.pathsep}{os.environ.get('PATH', '')}"}
+        # The copy leaves out .venv and node_modules, so the command reaches them through FV_ROOT.
+        env = {**os.environ, "FV_ROOT": str(root),
+               "PATH": f"{Path(__file__).resolve().parent}{os.pathsep}{os.environ.get('PATH', '')}"}
         try:
             run = subprocess.run(
                 command, shell=True, cwd=work, env=env, capture_output=True, text=True,
