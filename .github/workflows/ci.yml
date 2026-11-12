@@ -37,8 +37,11 @@ jobs:
       - name: Scripts
         run: bash tests/test_scripts.sh
       - name: Examples
+        # An example file without an installer belongs to the core tools, so it runs here.
         # FV_REQUIRE=1 turns a skipped tool into a failure, so this step cannot pass by skipping.
-        run: FV_REQUIRE=1 bash tests/test_examples.sh tlaplus hypothesis alloy
+        run: |
+          core="$(ls tests/examples.d | sed 's/\.sh$//' | grep -vxF -f <(ls plugins/fv-toolkit/scripts/installers))"
+          FV_REQUIRE=1 bash tests/test_examples.sh $core
 
   # Each on-demand tool gets its own job. A pull request runs only the tools
   # whose files it changed, and a push to main runs every tool.

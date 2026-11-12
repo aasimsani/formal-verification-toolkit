@@ -9,11 +9,6 @@
 | [allocation](allocation/README.md), `test_bad_vacuous_assume.py` | bad | Any | A filter that removes the interesting inputs leaves a correct assertion with nothing to check |
 | [allocation](allocation/README.md), `test_bad_weak_property.py` | bad | Any | A property about the shape of the result passes on almost every bug |
 | [lru-cache](lru-cache/README.md) | good | Caching, repository against a dict model (A2) | Random call sequences against a plain model find bugs that need five calls to show |
-
-## Anti-patterns without a reproduced example yet
-
-`../references/anti-patterns.md` describes each of these.
-
-- Mocks inside the property
-- A property that the code never claims
-- A random seed in CI with no pinned failures
+| [checkout-ledger](checkout-ledger/README.md), `test_mocked_ledger.py` | bad | Any | A mock in place of the real collaborator means that a bug in the real collaborator never runs |
+| [checkout-ledger](checkout-ledger/README.md), `test_unclaimed_property.py` | bad | Any | A property that the docstring never claims raises a false alarm on correct code |
+| [checkout-ledger](checkout-ledger/README.md), `test_flaky_seed.py` | bad | Any | A property with no `derandomize` and no pinned seed passes or fails by the examples that one run draws |

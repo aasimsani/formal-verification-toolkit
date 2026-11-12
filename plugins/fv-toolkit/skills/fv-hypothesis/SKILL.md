@@ -73,7 +73,7 @@ A pass means that the stated number of generated inputs satisfied the property. 
 
 ## Examples
 
-`examples/INDEX.md` lists every example. `examples/allocation/` puts one test file that detects every planted bug beside three test files that detect none. Read it before you write your first property.
+`examples/INDEX.md` lists every example. `examples/allocation/` puts one test file that detects every planted bug beside three test files that detect none. Read it before you write your first property. `examples/checkout-ledger/` reproduces three more ways a property test misleads: a mocked collaborator, a property that the code never claims, and a seed that is not pinned.
 
 ## References
 
