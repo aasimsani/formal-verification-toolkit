@@ -23,5 +23,6 @@ Each of these tools installs when it is named. Load its skill first, because the
 | Does a protocol that is written in Rust hold under every message interleaving, when the checked model must be the Rust code itself? | Stateright | `fv-stateright` | `fv-install stateright` |
 | Does a Cedar policy set allow and deny what it should, and does a policy change widen access? | Cedar | `fv-cedar` | `fv-install cedar` |
 | Can a Rust function panic, overflow or index out of bounds on some input? | Kani | `fv-kani` | `fv-install kani` |
+| Does the real code of a distributed system survive crashes, restarts, message loss and reordering, with every failure replayable from a seed? | Deterministic simulation | `fv-dst` | `fv-install dst` |
 
 A tool that is not in this file has no skill yet. Read `tools.md`, say that no skill covers the tool, and follow the router's workflow from the tool's own documentation.
