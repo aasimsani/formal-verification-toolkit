@@ -1,0 +1,39 @@
+{
+  "name": "fv-toolkit",
+  "version": "0.1.0",
+  "description": "Formal verification for real codebases. The router skill picks a tool by the question: TLA+ for orderings, crashes and retries, Alloy for relations and permissions, Hypothesis for functions over all inputs. Every check must fail on a planted bug before it counts, and every model records the commit it was read against.",
+  "author": {
+    "name": "Aasim Sani",
+    "url": "https://github.com/aasimsani"
+  },
+  "homepage": "https://github.com/aasimsani/formal-verification-toolkit",
+  "repository": "https://github.com/aasimsani/formal-verification-toolkit",
+  "license": "MIT",
+  "keywords": [
+    "formal-verification",
+    "tla+",
+    "alloy",
+    "property-based-testing",
+    "model-checking",
+    "codex"
+  ],
+  "skills": "./skills",
+  "interface": {
+    "displayName": "Formal Verification Toolkit",
+    "shortDescription": "Pick the check that can settle a correctness question, and prove the check can fail.",
+    "longDescription": "Routes a correctness question to the cheapest formal tool that can produce the failure, writes the model or the properties from the code, requires every check to fail on a planted bug, and replays each counterexample against the real code.",
+    "developerName": "Aasim Sani",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Read",
+      "Write",
+      "Shell"
+    ],
+    "websiteURL": "https://github.com/aasimsani/formal-verification-toolkit",
+    "defaultPrompt": [
+      "Use $formal-verification to check whether two jobs can race in this code.",
+      "Use $formal-verification to check this calculation for every input.",
+      "Use $fv-maintain to see whether the models still describe the code."
+    ]
+  }
+}

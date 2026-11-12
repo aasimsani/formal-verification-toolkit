@@ -1,0 +1,18 @@
+# Planted bugs for the Counter fixture.
+run fv-tlc Counter.tla Holds.cfg Witness.cfg LiveFair.cfg
+properties Bounded ReachesMax
+file Counter.tla
+
+mutation the increment ignores the bound
+detects Bounded
+- Next == x < Max /\ x' = x + 1
++ Next == x <= Max /\ x' = x + 1
+
+mutation the counter stops one short
+detects ReachesMax
+- Next == x < Max /\ x' = x + 1
++ Next == x < Max - 1 /\ x' = x + 1
+
+harmless a comment on Init
+- Init == x = 0
++ Init == x = 0  \* the counter starts at zero

@@ -1,0 +1,8 @@
+{
+  "name": "fv-toolkit",
+  "description": "Formal verification for real codebases. The router skill picks a tool by the question: TLA+ for orderings, crashes and retries, Alloy for relations and permissions, Hypothesis for functions over all inputs. Every check must fail on a planted bug before it counts, and every model records the commit it was read against.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Aasim Sani"
+  }
+}
