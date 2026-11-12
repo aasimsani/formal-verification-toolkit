@@ -15,14 +15,17 @@ Each fact below was reproduced with this plugin's examples or its test fixtures.
 | A property holds when the state it talks about is unreachable | Add a witness config. See `../examples/bad/unreachable-state/` |
 | A trace of a spec with one variable has no leading `/\` | `fv-tlc --trace` handles both forms |
 | TLC unpacks its standard modules into the Java temp directory, and two runs that start together can fail with "File does not exist: .../Naturals.tla" | `fv-tlc` gives each run its own temp directory. Do the same when you call TLC directly: `-Djava.io.tmpdir=<private dir>` |
+| `x \in Nat` stops TLC with an error when `x` is not a number, and so does `=` between an integer and a string | Keep one type per variable. `../examples/good/cache-invalidation/` uses a flag and a number for an entry that may be absent |
+| `SYMMETRY` in a config takes the name of an operator, and `SYMMETRY Permutations(Procs)` is a parse error | Define `Symm == Permutations(Procs)` in the module and write `SYMMETRY Symm` |
+| TLC accepts `SYMMETRY` together with a liveness `PROPERTY` and prints no warning | The result can be wrong. Use symmetry for safety only. See `../examples/bad/symmetry-with-liveness/` |
+| A violated action property such as `[][x' >= x]_x` exits 13, as a liveness violation does | `fv-tlc` reports it as `liveness`, so the config declares `expect: liveness`. See `../examples/bad/invariants-only/` |
+| An unbounded counter makes TLC run without end and print no verdict | Bound it with a constant or a `CONSTRAINT`, and name the bound in the report. See `../examples/bad/unbounded-state/` |
 | A config comment starts with `\*` | The `\* expect:` header is a comment to TLC |
 | In a config, a set of model values is `Jobs = {a, b}` and a string needs quotes, as in `Order = "one_txn"` | An unquoted word is a model value, and it never equals a string in the spec |
 
 ## From the TLC documentation, not reproduced here
 
-- A `SYMMETRY` set makes liveness checking unsound. Use symmetry for safety only.
 - Simulation mode, `-simulate`, samples behaviours and does not detect deadlocks. Use the default breadth-first mode for a verdict.
-- An unbounded queue or counter makes the state space infinite, and TLC never finishes. Bound it with a constant or a `CONSTRAINT`, and name the bound in the report as a limit of the check.
 - A `CONSTRAINT` removes behaviours from the search. List each one in the report with the behaviour it excludes.
 
 ## A symptom and where to look first
