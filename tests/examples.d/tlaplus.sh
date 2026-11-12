@@ -29,6 +29,16 @@ t "two-phase-commit: every config meets its declared outcome" 0 'PASS BlockOnCra
 t "two-phase-commit: every planted bug is detected" 0 'uncovered=0' \
   fv-mutate "$G/two-phase-commit/TwoPhaseCommit.mutations"
 
+t "lease-fencing: every config meets its declared outcome" 0 'PASS NoFencing.cfg: violated StaleWriteRejected' \
+  fv-tlc "$G/lease-fencing/LeaseFencing.tla"
+t "lease-fencing: every planted bug is detected" 0 'uncovered=0' \
+  fv-mutate "$G/lease-fencing/LeaseFencing.mutations"
+
+t "leader-election: every config meets its declared outcome" 0 'PASS LocalMajority.cfg: violated AtMostOneLeaderPerTerm' \
+  fv-tlc "$G/leader-election/LeaderElection.tla"
+t "leader-election: every planted bug is detected" 0 'uncovered=0' \
+  fv-mutate "$G/leader-election/LeaderElection.mutations"
+
 t "bad/merged-atomicity: the merged model passes, which is the symptom" 0 'PASS Merged.cfg: holds' \
   fv-tlc "$B/merged-atomicity/MergedRefund.tla"
 t "bad/liveness-without-fairness: TLC answers with a stuttering counterexample" 0 'PASS NoFairness.cfg: liveness' \
