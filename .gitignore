@@ -1,0 +1,6 @@
+.DS_Store
+__pycache__/
+.hypothesis/
+.pytest_cache/
+.venv/
+states/
