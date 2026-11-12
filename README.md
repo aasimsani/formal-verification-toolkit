@@ -48,6 +48,7 @@ The two core jars install with `fv-install`. Every other tool installs when it i
 | `fv-cedar` | Validates Cedar policies against their schema and checks each declared allow or deny decision, so a change that widens access fails. |
 | `fv-kani` | Checks a Rust function for panics, overflow and out-of-bounds indexing on every input within an unwind bound, with a cover statement as the witness. |
 | `fv-dst` | Writes a deterministic simulator in which one seeded scheduler owns task order, message delay, loss, duplication, crash and restart, so a seed replays a failure exactly. |
+| `fv-xstate` | Generates the shortest path to every reachable state of an XState machine and replays each path on the real implementation. |
 
 ## Scripts
 
