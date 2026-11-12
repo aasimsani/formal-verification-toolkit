@@ -112,6 +112,12 @@ this policy set and this set of entities. It says nothing about a request
 `tests.json` does not list, and nothing about a request outside the
 schema's entity types and actions.
 
+When the user needs the claim for every possible request, such as "the
+rewrite allows nothing that the old policies denied", say that listed
+cases cannot give it. Offer `fv-z3` for that claim. Its
+`policy-containment` example encodes two policy sets and searches for a
+request that only the new one allows.
+
 ## Examples
 
 `examples/INDEX.md` lists every example. `examples/good/document-access/`
