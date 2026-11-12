@@ -14,6 +14,21 @@ t "idempotent-receiver: every config meets its declared outcome" 0 'PASS EffectT
 t "idempotent-receiver: every planted bug is detected" 0 'uncovered=0' \
   fv-mutate "$G/idempotent-receiver/IdempotentReceiver.mutations"
 
+t "transactional-outbox: every config meets its declared outcome" 0 'PASS SeparateWrites.cfg: deadlock' \
+  fv-tlc "$G/transactional-outbox/TransactionalOutbox.tla"
+t "transactional-outbox: every planted bug is detected" 0 'uncovered=0' \
+  fv-mutate "$G/transactional-outbox/TransactionalOutbox.mutations"
+
+t "saga-orchestrated: every config meets its declared outcome" 0 'PASS BlindCompensate.cfg: violated CompensateImpliesRan' \
+  fv-tlc "$G/saga-orchestrated/SagaOrchestrated.tla"
+t "saga-orchestrated: every planted bug is detected" 0 'uncovered=0' \
+  fv-mutate "$G/saga-orchestrated/SagaOrchestrated.mutations"
+
+t "two-phase-commit: every config meets its declared outcome" 0 'PASS BlockOnCrashNoRecovery.cfg: deadlock' \
+  fv-tlc "$G/two-phase-commit/TwoPhaseCommit.tla"
+t "two-phase-commit: every planted bug is detected" 0 'uncovered=0' \
+  fv-mutate "$G/two-phase-commit/TwoPhaseCommit.mutations"
+
 t "bad/merged-atomicity: the merged model passes, which is the symptom" 0 'PASS Merged.cfg: holds' \
   fv-tlc "$B/merged-atomicity/MergedRefund.tla"
 t "bad/liveness-without-fairness: TLC answers with a stuttering counterexample" 0 'PASS NoFairness.cfg: liveness' \
