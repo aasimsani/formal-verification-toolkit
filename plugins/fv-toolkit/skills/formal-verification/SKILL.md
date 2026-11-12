@@ -1,0 +1,157 @@
+---
+name: formal-verification
+description: "Checks a design or a piece of code with the cheapest formal tool that can produce the failure, then proves that the check can fail. Routes by the question: a TLA+ model for orderings, crashes and retries, an Alloy model for relations, permissions and schemas, Hypothesis properties for functions over all inputs. Use for formal verification, model checking, TLA+, Alloy, property-based or model-based testing, \"can this race\", \"prove this invariant\", or a review of claims such as never, always, at most once and exactly once in a PR or a design doc. Not for ordinary unit tests, linting or type checking."
+---
+
+# Formal verification
+
+A test checks the cases that someone wrote. A formal check covers every case in a stated scope: every order of steps in a model, every structure up to a bound, or every generated input. This skill finds the claims that are worth that cost, picks the cheapest tool that can produce the failure, and reports a pass only after the check has failed on a planted bug.
+
+The person who asks does not need to read TLA+ or Alloy. They judge sentences, traces and verdicts, and the checker judges the rest. `${CLAUDE_PLUGIN_ROOT}/references/trust.md` explains that contract in words you can give to the user.
+
+## What a good check is
+
+- **True to the code.** Each part of the model names the code it transcribes. One indivisible step in the model is one indivisible step in the code.
+- **Able to fail.** Each property fails on a planted bug before the report calls it checked.
+- **Findings stay findings.** When the code breaks a property, report the counterexample. Never weaken the property or the model until the check passes. Change product code only when the user asks.
+- **Honest about scope.** State the bounds, the faults that were switched on, the assumptions, and what the model leaves out.
+- **Readable without the tool.** State each property and its harm in one plain sentence. Tell each counterexample as numbered steps in the system's own words.
+- **Cheap to rerun.** The check is one command with pinned tools, and it is short enough to repeat on every relevant change.
+- **Kept in step with the code.** Each model records the files it covers and the commit it was read at.
+
+## Scripts
+
+The scripts are in `${CLAUDE_PLUGIN_ROOT}/scripts/`. Run each one by its full path, and read its `--help` before the first use.
+
+| Script | Use |
+|---|---|
+| `fv-install` | Installs the pinned TLC and Alloy jars. Run it once before the first check. |
+| `fv-tlc` | Runs TLC on each config and compares the outcome with the config's `\* expect:` header. |
+| `fv-alloy` | Runs every command of an Alloy model and compares each result with its `expect` clause. |
+| `fv-mutate` | Plants each bug from a `.mutations` file in a copy and confirms that the check fails. |
+| `fv-drift` | Reports whether the covered code changed since a model's sync commit. |
+
+A script exits 3 and prints `UNAVAILABLE` when a tool is missing. Report that target as "not checked" and give the printed remedy. It is neither a pass nor a failure.
+
+## Workflow
+
+### 1. Triage
+
+Read `${CLAUDE_PLUGIN_ROOT}/references/claims.md` and write the claims table. When no claim earns a formal check, say so in one paragraph and stop.
+
+Ask the user once for sources outside the repository: design docs, incident reports and closed bugs. Treat each statement in them as a lead, and confirm it in the code before you build on it.
+
+Answer four questions about the system before any modelling, because every property rests on the answers:
+
+| Question | What to pin down |
+|---|---|
+| Who acts? | The actors, their roles, and the local state each one holds |
+| How do they coordinate? | Messages or shared state. For messages: lossy or reliable, ordered or not |
+| What fails? | The faults from `${CLAUDE_PLUGIN_ROOT}/references/faults.md` that apply |
+| What depends on time? | Timeouts, leases, clocks, retries with backoff |
+
+For each target, list the commits that fixed a bug in its code. Step 6 replays each one as a mutation.
+
+### 2. Pick the tool by the question
+
+| The question is | Tool | Skill |
+|---|---|---|
+| Can a bad ordering happen? Concurrency, retries, crashes, message loss | TLA+ with TLC | `fv-tlaplus` |
+| Can the data or the configuration reach an invalid shape? Relations, permissions, schemas | Alloy 6 | `fv-alloy` |
+| Is this code correct for every input? Functions, calculations, state machines in one process | Hypothesis | `fv-hypothesis` |
+| Does the running system obey the model? | The link techniques in `${CLAUDE_PLUGIN_ROOT}/references/linking.md` | the skill of the model's tool |
+
+Then find the architecture pattern in `${CLAUDE_PLUGIN_ROOT}/references/catalog/INDEX.md` and read only the catalog file that holds it. The row gives the failure that the model must be able to produce, the abstraction level, the properties and the link to code. When no pattern fits, say so and use the four questions alone.
+
+Prefer the cheapest rung that can produce the failure:
+
+1. Property tests on the real code.
+2. Symbolic or bounded checks on the real code.
+3. A design model with a model checker.
+4. Conformance between the model and the code.
+5. Proof, only where a bug is unacceptable.
+
+This version ships skills for TLA+, Alloy and Hypothesis. For any other tool, read `${CLAUDE_PLUGIN_ROOT}/references/tools.md`, say that no skill covers the tool yet, and follow this same workflow from the tool's own documentation. When the user names a tool, use it and report what it leaves unchecked.
+
+Factory, Builder, Adapter, Decorator, Facade, Proxy, Singleton and DI containers have no invariant of their own. Say so and verify only the contract of what they wrap.
+
+### 3. Freeze the properties
+
+Write each property as one sentence in the system's vocabulary, with the source sentence quoted beside it. Use the families in `${CLAUDE_PLUGIN_ROOT}/references/properties.md` to find the ones the claims imply. Keep a ledger with one row per property:
+
+| Property | Source | Kind | Encoded as |
+|---|---|---|---|
+| A customer is never refunded more than they paid | "refunds are capped at the payment" (ticket) | safety | `NeverOverRefund` invariant |
+| Every job eventually finishes | unwritten; the design needs it | liveness | `EventuallyDone`, under weak fairness on each job |
+| Refunds by webhook | PR description | — | not modelled |
+
+Show the ledger to the user and get their confirmation before you write a model. A wrong property is the most expensive mistake in this workflow. After confirmation, a property changes only with the user's agreement or with evidence that the promise itself changed.
+
+### 4. Write the model from the code
+
+Load the tool's skill and start from its example. Follow the first part of `${CLAUDE_PLUGIN_ROOT}/references/fidelity.md` while you write.
+
+- Model only the state that a property mentions, plus the fault switches.
+- Write one action per atomic step in the code, such as one database write or one message send. Never write one action per function.
+- Write each design choice as a constant, with one config per variant. Name a config for its mechanism, such as `CheckThenRefund`, and never for a verdict, such as `Buggy`.
+- Put the sync record in the header of every model:
+
+  ```text
+  Source read at: <commit>
+  Covers: <path>, <path>
+  ```
+
+- Run the checker after every edit. Do not write the whole model before the first run.
+- Keep each model under about 300 lines. Split by component when it grows.
+
+### 5. Check, with a declared outcome for every run
+
+Start with small bounds, such as two or three processes and one or two crashes, and then widen. Every run declares the outcome it must produce, and the wrapper script compares.
+
+- A config or command for the design you believe in must hold.
+- A config for a design you rejected must fail on the property it threatens.
+- At least one witness per model must show that the interesting state is reachable: the commit, the crash recovery, the compensation. A property that holds because the dangerous state is unreachable proves nothing.
+- Check liveness wherever the pattern has a progress property, under a fairness assumption that the code provides.
+
+When the config for the chosen design fails, you have the most valuable result this workflow produces. Investigate it before you touch the model.
+
+### 6. Make the check bite
+
+Read `${CLAUDE_PLUGIN_ROOT}/references/bite.md`. Write a `.mutations` file beside the model and run `fv-mutate` on it. Every mutation must print `DETECTED`, and no property may print `UNCOVERED`.
+
+### 7. Read each counterexample back into the code
+
+Follow the second part of `${CLAUDE_PLUGIN_ROOT}/references/fidelity.md`. Map every step of the trace to a code event and a line. Give each counterexample one disposition: reproduced, reachable, bounded away, or model gap. A step that cannot happen in the code means that the model is wrong, so fix the model and rerun.
+
+### 8. Link the model to the code
+
+Every model ships with at least one link from `${CLAUDE_PLUGIN_ROOT}/references/linking.md`. The usual first link is a deterministic regression test that forces the interleaving or the input of the counterexample. When no link is possible, name the gap in the report.
+
+### 9. Report and hand off
+
+Write the report as `${CLAUDE_PLUGIN_ROOT}/references/report.md` describes. Keep the model, its configs, its mutations file and a README with the property ledger beside the code they describe. Commit them only when the user asked for commits. Tell the user that `/fv-toolkit:fv-maintain` brings the models back in line after the code changes.
+
+## Guardrails
+
+- Never write "verified" or "proved" for a bounded check. Say what was checked, at which bounds, with which faults, and through which link to the code.
+- Never weaken a property to make a checker pass. Ask the user.
+- Never report `UNAVAILABLE` as a pass.
+- Never count a run without a declared outcome.
+- Treat a failed trace validation as "mapping error or bug" until you have checked the log mapping.
+- When you pick a tool outside `${CLAUDE_PLUGIN_ROOT}/references/tools.md`, say why.
+
+## Reference files
+
+| File | Read when |
+|---|---|
+| `${CLAUDE_PLUGIN_ROOT}/references/claims.md` | Step 1, always |
+| `${CLAUDE_PLUGIN_ROOT}/references/catalog/INDEX.md` | Step 2, to find the pattern |
+| `${CLAUDE_PLUGIN_ROOT}/references/tools.md` | A tool without a skill, or a tool the catalog names that is not core |
+| `${CLAUDE_PLUGIN_ROOT}/references/properties.md` | Step 3 |
+| `${CLAUDE_PLUGIN_ROOT}/references/faults.md` | Steps 1 and 4 |
+| `${CLAUDE_PLUGIN_ROOT}/references/fidelity.md` | Steps 4 and 7 |
+| `${CLAUDE_PLUGIN_ROOT}/references/bite.md` | Step 6 |
+| `${CLAUDE_PLUGIN_ROOT}/references/linking.md` | Step 8 |
+| `${CLAUDE_PLUGIN_ROOT}/references/report.md` | Step 9 |
+| `${CLAUDE_PLUGIN_ROOT}/references/trust.md` | The user asks how to trust a model they cannot read |
+| `${CLAUDE_PLUGIN_ROOT}/references/setup.md` | A tool is missing |

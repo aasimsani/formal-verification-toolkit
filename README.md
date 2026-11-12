@@ -15,6 +15,15 @@ Then install the pinned checkers once. The command needs a JDK 17 or later.
 plugins/fv-toolkit/scripts/fv-install
 ```
 
+## Skills
+
+| Skill | What it does |
+|---|---|
+| `formal-verification` | The router. It triages the claims, picks a tool by the question, freezes the properties, and runs the loop: model, check, plant bugs, replay each counterexample in the code, report. |
+| `fv-maintain` | Brings models back in line after the code changed, and says whether each failure is drift in the model or a bug in the code. |
+
+The router reads its pattern catalogs, property families and fault models from `plugins/fv-toolkit/references/`. `docs/spec.md` is the design document that those files come from.
+
 ## Scripts
 
 Every script prints one verdict per line and documents its exit codes in `--help`.
@@ -34,10 +43,11 @@ A tool that is not installed makes a script exit 3 and print `UNAVAILABLE`. That
 ```bash
 plugins/fv-toolkit/scripts/fv-install
 bash tests/test_scripts.sh
+bash tests/test_structure.sh
 ```
 
-The tests run the real TLC and Alloy jars against the fixtures in `tests/fixtures/`.
+`test_scripts.sh` runs the real TLC and Alloy jars against the fixtures in `tests/fixtures/`. `test_structure.sh` checks that every file a skill names exists.
 
 ## License
 
-MIT. See `LICENSE`.
+MIT. See `LICENSE`. `NOTICE.md` lists the open-source work that this project adapts.
