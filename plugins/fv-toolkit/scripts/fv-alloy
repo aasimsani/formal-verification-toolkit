@@ -108,7 +108,10 @@ def main(argv):
             failed = failed or not passed
             if got == "SAT" and (show_all or not passed):
                 for solution in sorted(Path(out).glob(f"{name}-solution-*.txt"))[:1]:
-                    print("\n".join("  " + line for line in solution.read_text().splitlines()[:60]))
+                    lines = solution.read_text().splitlines()
+                    # The model's own relations are the part a reader maps back to the system.
+                    relations = [line for line in lines if line.startswith(("this/", "skolem"))]
+                    print("\n".join("  " + line for line in (relations or lines)[:60]))
     return 1 if failed else 0
 
 

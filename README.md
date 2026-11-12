@@ -22,6 +22,7 @@ plugins/fv-toolkit/scripts/fv-install
 | `formal-verification` | The router. It triages the claims, picks a tool by the question, freezes the properties, and runs the loop: model, check, plant bugs, replay each counterexample in the code, report. |
 | `fv-tlaplus` | Writes and checks a TLA+ model with TLC: one action per atomic step, one config per design with a declared outcome, witnesses and mutations. It ships two checked examples and three reproduced anti-patterns. |
 | `fv-hypothesis` | Writes property-based and stateful tests on real Python code, and requires each property to fail on a planted bug in that code. It ships one test file that detects every planted bug beside three that detect none. |
+| `fv-alloy` | Writes and checks an Alloy 6 model of structure: permissions, ownership, isolation, compatibility. Every check is paired with a satisfiable run, and the check of a rejected design must find its counterexample. |
 | `fv-maintain` | Brings models back in line after the code changed, and says whether each failure is drift in the model or a bug in the code. |
 
 The router reads its pattern catalogs, property families and fault models from `plugins/fv-toolkit/references/`. `docs/spec.md` is the design document that those files come from.
