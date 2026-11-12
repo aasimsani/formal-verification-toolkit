@@ -34,4 +34,15 @@ untested="$(for inst in "$P"/scripts/installers/*; do [ -e "$inst" ] || continue
   [ -f "$P/../../tests/examples.d/$name.sh" ] || printf "%s " "$name"; done)"
 check "every installer has a tests/examples.d file${untested:+ (missing: $untested)}" "[ -z \"\$untested\" ]"
 
+# The two manifests describe one plugin, so a release that bumps one must bump the other.
+same="$(python3 - "$P" <<'PY'
+import json, sys
+root = sys.argv[1]
+a = json.load(open(f"{root}/.claude-plugin/plugin.json"))
+b = json.load(open(f"{root}/.codex-plugin/plugin.json"))
+print("same" if (a["name"], a["version"]) == (b["name"], b["version"]) else "different")
+PY
+)"
+check "the Claude and Codex manifests state the same name and version" '[ "$same" = same ]'
+
 exit $fail

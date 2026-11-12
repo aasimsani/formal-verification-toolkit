@@ -9,6 +9,13 @@ A Claude Code plugin that checks a design or a piece of code with the cheapest f
 /plugin install fv-toolkit@formal-verification-toolkit
 ```
 
+In Codex:
+
+```text
+codex plugin marketplace add https://github.com/aasimsani/formal-verification-toolkit
+codex plugin add fv-toolkit@formal-verification-toolkit
+```
+
 Then install the pinned checkers once. The command needs a JDK 17 or later.
 
 ```bash

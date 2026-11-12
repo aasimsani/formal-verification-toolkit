@@ -21,7 +21,7 @@ The person who asks does not need to read TLA+ or Alloy. They judge sentences, t
 
 ## Scripts
 
-The scripts are in `${CLAUDE_PLUGIN_ROOT}/scripts/`. Run each one by its full path, and read its `--help` before the first use.
+The scripts are in `${CLAUDE_PLUGIN_ROOT}/scripts/`. Run each one by its full path, and read its `--help` before the first use. In a harness that does not set `${CLAUDE_PLUGIN_ROOT}`, the plugin root is the directory two levels above this file, and every path in these skills starts there.
 
 | Script | Use |
 |---|---|
