@@ -61,7 +61,8 @@ jobs:
           if [ "$EVENT" = pull_request ]; then
             changed="$(git diff --name-only "$BASE"...HEAD)"
             # A change to a shared script or to this workflow reruns every tool.
-            if ! echo "$changed" | grep -qE '^plugins/fv-toolkit/scripts/fv-|^tests/test_examples\.sh$|^\.github/workflows/'; then
+            # A tool's own wrapper, such as fv-z3, reruns only that tool.
+            if ! echo "$changed" | grep -qE '^plugins/fv-toolkit/scripts/(fv-(install|mutate|tlc|alloy)|fvlib\.py)$|^tests/test_examples\.sh$|^\.github/workflows/'; then
               pick=""
               for tool in $all; do
                 if echo "$changed" | grep -qE "scripts/installers/$tool\$|scripts/fv-$tool\$|tests/examples\.d/$tool\.sh\$|skills/fv-$tool/"; then
