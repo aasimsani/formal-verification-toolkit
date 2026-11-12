@@ -52,6 +52,10 @@ bash tests/test_examples.sh
 
 The Hypothesis examples need `uv`, which supplies Hypothesis and pytest for the run. `test_scripts.sh` runs the real TLC and Alloy jars against the fixtures in `tests/fixtures/`. `test_structure.sh` checks that every file a skill names exists. `test_examples.sh` runs every shipped example: a good example must meet its declared outcomes and detect its mutations, and a bad example must produce the symptom its README states.
 
+## CI
+
+`.github/workflows/ci.yml` installs the pinned jars and runs the three suites on every pull request and on every push to `main`.
+
 ## License
 
 MIT. See `LICENSE`. `NOTICE.md` lists the open-source work that this project adapts.
