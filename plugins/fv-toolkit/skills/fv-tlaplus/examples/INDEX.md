@@ -17,6 +17,7 @@
 | [good/transactional-outbox](good/transactional-outbox/README.md) | good | Transactional outbox (B1) | Three designs sit behind one knob, and the resume point is computed from durable state. A relay that retries from a durable flag can deliver the same row twice |
 | [good/two-phase-commit](good/two-phase-commit/README.md) | good | Two-phase commit (B3) | The coordinator's durable vote record is kept apart from a manager's current state. A crash with no recovery is a real deadlock, and the config declares it |
 | [good/watermark-cursor](good/watermark-cursor/README.md) | good | Incremental load by watermark cursor (C1) | A dedup set and the comparison operator form one design. A slow commit is bounded to the model's own run window |
+| [good/lease-induction](good/lease-induction/README.md) | good | Mutex or lock (A4), with Apalache | An inductive invariant is checked in three steps: it holds initially, a step preserves it, and it implies the safety property |
 | [bad/merged-atomicity](bad/merged-atomicity/README.md) | bad | Read-modify-write without a lock (D) | One action per function passes on a design that fails in production |
 | [bad/liveness-without-fairness](bad/liveness-without-fairness/README.md) | bad | Any pattern with a progress property | Liveness without fairness fails on a stuttering trace and says nothing about the design |
 | [bad/unreachable-state](bad/unreachable-state/README.md) | bad | Two-phase commit (B2) | A property holds when its state is unreachable, and only a witness shows it |
@@ -25,3 +26,4 @@
 | [bad/symmetry-with-liveness](bad/symmetry-with-liveness/README.md) | bad | Any pattern with symmetric processes | `SYMMETRY` with a liveness `PROPERTY` prints no warning, and TLC can report a counterexample that breaks the spec's own fairness |
 | [bad/unbounded-state](bad/unbounded-state/README.md) | bad | Any | An unbounded counter or queue makes TLC run without end. A `CONSTRAINT` bounds the search |
 | [bad/invariants-only](bad/invariants-only/README.md) | bad | Any | An `INVARIANT` cannot relate two consecutive states. Only an action property catches a forbidden step |
+| [bad/non-inductive-invariant](bad/non-inductive-invariant/README.md) | bad | Mutex or lock (A4), with Apalache | TLC confirms an invariant on the states it reaches. That does not make the invariant inductive |

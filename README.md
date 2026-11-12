@@ -52,6 +52,8 @@ The two core jars install with `fv-install`. Every other tool installs when it i
 | `fv-tamarin` | Writes and checks a Tamarin theory of a security protocol against an active attacker, and pairs every safety lemma with a lemma that shows the protocol can run. |
 | `fv-sqlequiv` | Checks two SQL queries for equal results on every small table up to a bound, with NULLs and duplicate rows, on SQLite. |
 
+Apalache has no skill of its own. `fv-install apalache` adds the symbolic checker to `fv-tlaplus`, which uses it when TLC cannot enumerate the states or when an invariant must be shown inductive.
+
 ## Scripts
 
 Every script prints one verdict per line and documents its exit codes in `--help`.

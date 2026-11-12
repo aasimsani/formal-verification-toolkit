@@ -104,3 +104,4 @@ When the `statechart` skill of the pstack plugin is installed, use it to draw th
 | `references/gotchas.md` | TLC gives a result you did not expect |
 | `references/refactors.md` | You split an action or add a variable |
 | `references/anti-patterns.md` | You review a model, yours or someone else's |
+| `references/apalache.md` | TLC cannot finish on the constants you need, or an invariant must be shown inductive. `fv-install apalache` installs the checker |
