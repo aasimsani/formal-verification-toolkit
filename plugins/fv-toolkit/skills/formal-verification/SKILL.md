@@ -31,6 +31,7 @@ The scripts are in `${CLAUDE_PLUGIN_ROOT}/scripts/`. Run each one by its full pa
 | `fv-mutate` | Plants each bug from a `.mutations` file in a copy and confirms that the check fails. |
 | `fv-replay` | Turns a TLC counterexample into a pytest file that replays it against the code. |
 | `fv-conform` | Checks a recorded run of the real system against a TLA+ spec. |
+| `fv-pin` | Pins the confirmed properties and reports when one of them changes. |
 | `fv-drift` | Reports whether the covered code changed since a model's sync commit. |
 
 A script exits 3 and prints `UNAVAILABLE` when a tool is missing. Report that target as "not checked" and give the printed remedy. It is neither a pass nor a failure.
@@ -119,9 +120,19 @@ Start with small bounds, such as two or three processes and one or two crashes, 
 
 When the config for the chosen design fails, you have the most valuable result this workflow produces. Investigate it before you touch the model.
 
+When the model encodes every row of the ledger, pin the properties and the declared outcomes:
+
+```bash
+${CLAUDE_PLUGIN_ROOT}/scripts/fv-pin write <model dir> <file>:<Property> <config or test file> ...
+```
+
+From then on, run `fv-pin check <model dir>` before every report. Run `fv-pin write` again only after the user agreed to change a property.
+
 ### 6. Make the check bite
 
 Read `${CLAUDE_PLUGIN_ROOT}/references/bite.md`. Write a `.mutations` file beside the model and run `fv-mutate` on it. Every mutation must print `DETECTED`, and no property may print `UNCOVERED`.
+
+Then offer the independent review that `${CLAUDE_PLUGIN_ROOT}/references/review.md` describes. A second agent reads the code and the properties without your reasoning, and returns the bugs that the properties would let pass.
 
 ### 7. Read each counterexample back into the code
 
@@ -133,7 +144,7 @@ Every model ships with at least one link from `${CLAUDE_PLUGIN_ROOT}/references/
 
 ### 9. Report and hand off
 
-Write the report as `${CLAUDE_PLUGIN_ROOT}/references/report.md` describes. Keep the model, its configs, its mutations file and a README with the property ledger beside the code they describe. Commit them only when the user asked for commits. Tell the user that `/fv-toolkit:fv-maintain` brings the models back in line after the code changes.
+Write the report as `${CLAUDE_PLUGIN_ROOT}/references/report.md` describes. Keep the model, its configs, its mutations file and a README with the property ledger beside the code they describe. Commit them only when the user asked for commits. When the repository will keep the check, offer to write the project-local recheck skill that `report.md` describes, so that an agent who changes the covered code finds the check. Tell the user that `/fv-toolkit:fv-maintain` brings the models back in line after the code changes.
 
 ## Guardrails
 
@@ -156,6 +167,7 @@ Write the report as `${CLAUDE_PLUGIN_ROOT}/references/report.md` describes. Keep
 | `${CLAUDE_PLUGIN_ROOT}/references/faults.md` | Steps 1 and 4 |
 | `${CLAUDE_PLUGIN_ROOT}/references/fidelity.md` | Steps 4 and 7 |
 | `${CLAUDE_PLUGIN_ROOT}/references/bite.md` | Step 6 |
+| `${CLAUDE_PLUGIN_ROOT}/references/review.md` | Step 6, when the user wants an independent review |
 | `${CLAUDE_PLUGIN_ROOT}/references/linking.md` | Step 8 |
 | `${CLAUDE_PLUGIN_ROOT}/references/report.md` | Step 9 |
 | `${CLAUDE_PLUGIN_ROOT}/references/trust.md` | The user asks how to trust a model they cannot read |

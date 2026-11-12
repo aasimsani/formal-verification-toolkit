@@ -55,4 +55,39 @@ The next agent reads the record cold, in the middle of a change. Leave these bes
 
 Move the sync commit forward only after you confirm that the model describes the code at the new commit. `fv-drift` reads this record.
 
+`properties.pins` sits in the same directory. It holds the SHA-256 of each property and each declared outcome that the user confirmed, and `fv-pin check` reports any that changed.
+
 For each confirmed bug, keep one file under `findings/` with the property, the date, the trace as numbered steps in the system's words, and the change that fixed it. Add to these files and never regenerate them, so that a later weakening of a property shows up as a changed verdict in a diff.
+
+## A project-local recheck skill
+
+When the repository will keep the check, offer to write a small skill into it at `.claude/skills/verify-<area>/SKILL.md`. An agent that changes the covered code then finds the check without this plugin in its context. The skill needs frontmatter, because a skill without it never registers.
+
+```markdown
+---
+name: verify-<area>
+description: "Rechecks that <the property in one sentence>. Use before a change to <the covered files or functions> is reported as done."
+---
+
+# Verify <area>
+
+The property is that <one sentence>. When it breaks, <the harm in one sentence>.
+
+- Covers: <paths and functions>
+- Source read at: <commit>
+- Bounds and assumptions: <sizes, faults switched on, fairness>
+
+## Run
+
+<The one command, with pinned tools.> A pass prints <the verdict lines>.
+
+## When it fails
+
+Walk the counterexample through the code, as <the model's README> describes. A step that cannot happen in the code means that the model is stale. Update the model from the code, and never weaken the property.
+
+## When the covered code changes on purpose
+
+Update the model first and rerun. Then move `Source read at:` to the new commit.
+```
+
+Use the repository's real commands, paths and names, and leave no placeholder. Before you hand off, follow the new skill once on a scratch change that breaks the property in the real code. It must catch the break. Then drop the scratch change and confirm that the check is back where it started.

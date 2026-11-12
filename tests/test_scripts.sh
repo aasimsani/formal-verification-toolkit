@@ -174,6 +174,28 @@ t "fv-mutate refuses to run when the unmutated check fails" 1 '^BASELINE FAILED'
 t "the scripts leave the fixture files unchanged" 0 '^same$' \
   sh -c "[ '$before' = '$(tree_sum)' ] && echo same"
 
+# --- fv-pin ----------------------------------------------------------------
+copy tla pin
+t "fv-pin write records one pin per target" 0 '^PINNED 2 targets' \
+  fv-pin write "$T/pin" Counter.tla:Bounded Holds.cfg
+t "fv-pin check passes while the pinned text is unchanged" 0 '^OK Counter.tla:Bounded' \
+  fv-pin check "$T/pin"
+sed -i.bak 's/^Init == x = 0$/Init == x = 0  \\* the start/' "$T/pin/Counter.tla"
+sed -i.bak 's/^NeverMax == x < Max$/NeverMax == x < Max + 0/' "$T/pin/Counter.tla"
+t "fv-pin check stays green when the model changes outside the pinned property" 0 '^OK Counter.tla:Bounded' \
+  fv-pin check "$T/pin"
+sed -i.bak 's/^Bounded == x <= Max$/Bounded == x <= Max + 1/' "$T/pin/Counter.tla"
+t "fv-pin check fails a weakened property" 1 '^CHANGED Counter.tla:Bounded' \
+  fv-pin check "$T/pin"
+printf '\\* expect: violated Bounded\nSPECIFICATION Spec\nCONSTANT Max = 3\nINVARIANT Bounded\n' > "$T/pin/Holds.cfg"
+t "fv-pin check fails a config whose declared outcome changed" 1 '^CHANGED Holds.cfg' \
+  fv-pin check "$T/pin"
+copy tla nopin
+t "fv-pin check reports a directory with no pins as NO RECORD" 1 '^NO RECORD' \
+  fv-pin check "$T/nopin"
+t "fv-pin write rejects a name that the file does not define" 2 'does not define NoSuchName' \
+  fv-pin write "$T/nopin" Counter.tla:NoSuchName
+
 # --- fv-drift --------------------------------------------------------------
 R="$T/repo"
 mkdir -p "$R/src" "$R/model"

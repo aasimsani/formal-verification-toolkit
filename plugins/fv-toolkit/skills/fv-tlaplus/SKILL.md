@@ -84,6 +84,8 @@ Rewrite the reduced trace as numbered steps in the system's own words, one step 
 
 The user asks one question of each step: can my system really do this?
 
+When the `statechart` skill of the pstack plugin is installed, use it to draw the checked model as a chart in the user's words. Refer to it by name, and copy none of its commands into your files.
+
 ## Examples
 
 `examples/INDEX.md` lists every example with its pattern and its lesson. Read the one closest to your case.

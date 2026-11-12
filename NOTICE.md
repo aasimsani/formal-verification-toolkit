@@ -6,7 +6,7 @@ This project is MIT licensed. See `LICENSE`. Parts of its text adapt the open-so
 
 | Source | License | Revision read | What this project adapts |
 |---|---|---|---|
-| [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan, in `cursor/plugins` | MIT | `a5539b15a3d5` | The criteria under "What a good check is" in `skills/formal-verification/SKILL.md`, from `create-formal-verification-skill`. The outcomes and the pass in `skills/fv-maintain/SKILL.md`, from `maintain-formal-verification-skill`. Both were reworded and bound to this project's scripts. |
+| [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan, in `cursor/plugins` | MIT | `a5539b15a3d5` | The criteria under "What a good check is" in `skills/formal-verification/SKILL.md`, from `create-formal-verification-skill`. The outcomes and the pass in `skills/fv-maintain/SKILL.md`, from `maintain-formal-verification-skill`. The project-local recheck skill in `references/report.md`, from the hand-off of `create-formal-verification-skill`. All three were reworded and bound to this project's scripts. |
 | [Specula](https://github.com/specula-org/Specula) | Apache-2.0 | `1a86e7e5ca7f` | Part 2 of `references/fidelity.md`, from `skills/tla-checking-workflow/references/spec-fidelity-checklist.md`. The procedure was reworded, generalized beyond consensus protocols, and extended with dispositions. |
 | [tlaplus/AgentSkills](https://github.com/tlaplus/AgentSkills) | MIT | `f2adb5e4e2c6` | `skills/fv-tlaplus/references/refactors.md`, from the `tlaplus-split-action` and `tlaplus-add-variable` skills. Both procedures were condensed and reworded. |
 

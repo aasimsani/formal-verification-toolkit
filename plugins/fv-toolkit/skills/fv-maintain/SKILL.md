@@ -24,7 +24,7 @@ Edit only the verification: models, configs, mutations files, property tests and
 
 ## The pass
 
-1. **Find the models.** Run `${CLAUDE_PLUGIN_ROOT}/scripts/fv-drift <directory>` on the repository. It lists every file that carries a `Source read at:` record. For each model, collect the properties, the covered code, the bounds, the assumptions and the command that reruns it. A model that prints `NO RECORD` has no sync commit. Use the last commit that changed the model file, and say that you did.
+1. **Find the models.** Run `${CLAUDE_PLUGIN_ROOT}/scripts/fv-drift <directory>` on the repository. It lists every file that carries a `Source read at:` record. For each model, collect the properties, the covered code, the bounds, the assumptions and the command that reruns it. A model that prints `NO RECORD` has no sync commit. Use the last commit that changed the model file, and say that you did. Then run `${CLAUDE_PLUGIN_ROOT}/scripts/fv-pin check <model dir>` for each model. A `CHANGED` line means that a property or a declared outcome is different from the one the user confirmed, so find the commit that changed it and the evidence for the change before you go on.
 
 2. **Run every check as it is.** Run each check and its mutations once before you change anything, and record the results. A pass here means only that the old description still holds. A failure here can be drift or a bug. Do not decide which until step 5.
 
