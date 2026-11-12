@@ -8,6 +8,7 @@ This project is MIT licensed. See `LICENSE`. Parts of its text adapt the open-so
 |---|---|---|---|
 | [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Lauren Tan, in `cursor/plugins` | MIT | `a5539b15a3d5` | The criteria under "What a good check is" in `skills/formal-verification/SKILL.md`, from `create-formal-verification-skill`. The outcomes and the pass in `skills/fv-maintain/SKILL.md`, from `maintain-formal-verification-skill`. Both were reworded and bound to this project's scripts. |
 | [Specula](https://github.com/specula-org/Specula) | Apache-2.0 | `1a86e7e5ca7f` | Part 2 of `references/fidelity.md`, from `skills/tla-checking-workflow/references/spec-fidelity-checklist.md`. The procedure was reworded, generalized beyond consensus protocols, and extended with dispositions. |
+| [tlaplus/AgentSkills](https://github.com/tlaplus/AgentSkills) | MIT | `f2adb5e4e2c6` | `skills/fv-tlaplus/references/refactors.md`, from the `tlaplus-split-action` and `tlaplus-add-variable` skills. Both procedures were condensed and reworded. |
 
 ## Ideas with no text or code copied
 
@@ -42,6 +43,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+## tlaplus/AgentSkills license
+
+tlaplus/AgentSkills is under the same MIT License text as above, with the notice "Copyright (c) 2026 TLA+".
 
 ## Specula license
 

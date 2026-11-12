@@ -20,6 +20,7 @@ plugins/fv-toolkit/scripts/fv-install
 | Skill | What it does |
 |---|---|
 | `formal-verification` | The router. It triages the claims, picks a tool by the question, freezes the properties, and runs the loop: model, check, plant bugs, replay each counterexample in the code, report. |
+| `fv-tlaplus` | Writes and checks a TLA+ model with TLC: one action per atomic step, one config per design with a declared outcome, witnesses and mutations. It ships two checked examples and three reproduced anti-patterns. |
 | `fv-maintain` | Brings models back in line after the code changed, and says whether each failure is drift in the model or a bug in the code. |
 
 The router reads its pattern catalogs, property families and fault models from `plugins/fv-toolkit/references/`. `docs/spec.md` is the design document that those files come from.
@@ -44,9 +45,10 @@ A tool that is not installed makes a script exit 3 and print `UNAVAILABLE`. That
 plugins/fv-toolkit/scripts/fv-install
 bash tests/test_scripts.sh
 bash tests/test_structure.sh
+bash tests/test_examples.sh
 ```
 
-`test_scripts.sh` runs the real TLC and Alloy jars against the fixtures in `tests/fixtures/`. `test_structure.sh` checks that every file a skill names exists.
+`test_scripts.sh` runs the real TLC and Alloy jars against the fixtures in `tests/fixtures/`. `test_structure.sh` checks that every file a skill names exists. `test_examples.sh` runs every shipped example: a good example must meet its declared outcomes and detect its mutations, and a bad example must produce the symptom its README states.
 
 ## License
 
