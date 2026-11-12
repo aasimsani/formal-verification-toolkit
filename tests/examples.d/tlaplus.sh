@@ -59,6 +59,16 @@ t "reconciler: every config meets its declared outcome" 0 'PASS StaleRead.cfg: v
 t "reconciler: every planted bug is detected" 0 'uncovered=0' \
   fv-mutate "$G/reconciler/Reconciler.mutations"
 
+t "cache-invalidation: every config meets its declared outcome" 0 'PASS NoVersionCheck.cfg: violated NeverStaleAtRest' \
+  fv-tlc "$G/cache-invalidation/CacheInvalidation.tla"
+t "cache-invalidation: every planted bug is detected" 0 'uncovered=0' \
+  fv-mutate "$G/cache-invalidation/CacheInvalidation.mutations"
+
+t "release-ordering: every config meets its declared outcome" 0 'PASS ContractTooEarly.cfg: violated NeverStrandsOldVersion' \
+  fv-tlc "$G/release-ordering/ReleaseOrdering.tla"
+t "release-ordering: every planted bug is detected" 0 'uncovered=0' \
+  fv-mutate "$G/release-ordering/ReleaseOrdering.mutations"
+
 t "bad/merged-atomicity: the merged model passes, which is the symptom" 0 'PASS Merged.cfg: holds' \
   fv-tlc "$B/merged-atomicity/MergedRefund.tla"
 t "bad/liveness-without-fairness: TLC answers with a stuttering counterexample" 0 'PASS NoFairness.cfg: liveness' \
