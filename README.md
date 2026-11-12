@@ -42,6 +42,7 @@ The two core jars install with `fv-install`. Every other tool installs when it i
 |---|---|
 | `fv-z3` | Encodes a rule table, a policy diff or a config invariant as a Z3 formula and searches for a violation. It reports `unknown` as an error and never as a pass. |
 | `fv-schemathesis` | Generates requests from an OpenAPI schema, checks each response against the schema, and runs sequences of calls such as create, get, delete. |
+| `fv-crosshair` | Searches symbolically for an input on which a Python function breaks its contract, and for an input on which two versions of a function disagree. |
 
 ## Scripts
 
