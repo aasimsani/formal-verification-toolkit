@@ -24,7 +24,8 @@ if ! command -v rustup >/dev/null 2>&1; then
 fi
 
 installed_version() {
-  cargo kani --version 2>/dev/null | sed -n 's/^cargo-kani //p'
+  # The first line reads "Kani Rust Verifier 0.68.0 (cargo plugin)".
+  cargo kani --version 2>/dev/null | sed -n 's/^Kani Rust Verifier \([0-9.]*\).*/\1/p'
 }
 
 if [ "$(installed_version)" = "$KANI_VERSION" ]; then
