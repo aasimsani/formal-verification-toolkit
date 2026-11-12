@@ -41,6 +41,7 @@ The two core jars install with `fv-install`. Every other tool installs when it i
 | Skill | What it does |
 |---|---|
 | `fv-z3` | Encodes a rule table, a policy diff or a config invariant as a Z3 formula and searches for a violation. It reports `unknown` as an error and never as a pass. |
+| `fv-schemathesis` | Generates requests from an OpenAPI schema, checks each response against the schema, and runs sequences of calls such as create, get, delete. |
 
 ## Scripts
 
