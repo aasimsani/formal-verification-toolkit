@@ -28,15 +28,17 @@ Exit codes: 0 when every command passes, 1 on a FAIL or an ERROR, 2 on a usage
 error, and 3 when Java or the Alloy jar is missing. Exit 3 means the model was
 not checked.
 
-Environment: FV_HOME (default ~/.cache/fv), JAVA (default java).
+Environment: FV_HOME (default ~/.cache/fv), JAVA (default: the first java that runs).
 """
-import os
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
+
+sys.dont_write_bytecode = True  # Keep __pycache__ out of the installed plugin.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import fvlib  # noqa: E402
 
 COMMAND = re.compile(r"^\s*(?:\w+\s*:\s*)?(run|check)\b(.*)$")
 # Alloy 6.2.0 appends "expects=<n>" to a result that misses its expect clause, and exits 1.
@@ -71,13 +73,13 @@ def main(argv):
         print(f"usage: fv-alloy [--show] <Model.als>\n{model} is not a file", file=sys.stderr)
         return 2
 
-    java = os.environ.get("JAVA", "java")
-    jar = Path(os.environ.get("FV_HOME", Path.home() / ".cache" / "fv")) / "alloy.jar"
+    jar = fvlib.fv_home() / "alloy.jar"
     if not jar.is_file():
         print(f"UNAVAILABLE alloy: {jar} is missing; run fv-install alloy")
         return 3
-    if not shutil.which(java):
-        print(f"UNAVAILABLE java: {java} is not on PATH; install a JDK 17 or later or set JAVA")
+    java = fvlib.find_java()
+    if java is None:
+        print(fvlib.JAVA_UNAVAILABLE)
         return 3
 
     commands = declared_commands(model.read_text())

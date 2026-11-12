@@ -63,6 +63,27 @@ fetch() {
   echo "READY $tool $file"
 }
 
+# build_agent compiles the Java agent that lets TLC start where a sandbox
+# forbids listening sockets. It needs javac, so a machine with only a JRE
+# skips it, and fv-tlc then names the remedy when the socket is refused.
+build_agent() {
+  local jar="$FV_HOME/no-rmi-listen.jar" src
+  src="$(cd "$(dirname "$0")" && pwd)/lib/NoRmiListen.java"
+  [ "$check_only" = 1 ] && return 0
+  [ -f "$jar" ] && [ "$jar" -nt "$src" ] && return 0
+  local bin javac jartool work
+  bin="$(dirname "$(command -v "$JAVA")")"
+  javac="$bin/javac"; [ -x "$javac" ] || javac="$(command -v javac || true)"
+  jartool="$bin/jar"; [ -x "$jartool" ] || jartool="$(command -v jar || true)"
+  [ -n "$javac" ] && [ -n "$jartool" ] || return 0
+  work="$(mktemp -d)"
+  if "$javac" -d "$work/classes" "$src" >/dev/null 2>&1; then
+    printf 'Premain-Class: NoRmiListen\n' > "$work/manifest"
+    "$jartool" cfm "$jar" "$work/manifest" -C "$work/classes" . >/dev/null 2>&1 || true
+  fi
+  rm -r "$work"
+}
+
 need_java() {
   "$JAVA" -version >/dev/null 2>&1 ||
     unavailable java "install a JDK 17 or later, or set JAVA to its java binary"
@@ -91,6 +112,7 @@ for tool in "$@"; do
     tla)
       need_java
       fetch tla tla2tools.jar "$TLA_URL" "$TLA_SHA256"
+      build_agent
       ;;
     alloy)
       need_java

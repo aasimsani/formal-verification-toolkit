@@ -97,6 +97,33 @@ t "fv-tlc --json prints each state of a counterexample as parsed values" 0 '^bus
 t "fv-tlc --json keeps the verdict and the exit code of the plain run" 1 '"verdict": "FAIL"' \
   fv-tlc --json "$T/trace/Counter.tla" "$T/trace/Holds.cfg"
 
+# A sandboxed shell: the java on PATH may not run, and TLC may not open its RMI socket.
+printf '#!/usr/bin/env bash\necho "Unable to locate a Java Runtime." >&2\nexit 1\n' > "$T/nojava"
+cat > "$T/fakejava" <<'SH'
+#!/usr/bin/env bash
+# Stands in for a JVM inside a sandbox that forbids listening sockets.
+case " $* " in *" -version "*) exit 0 ;; esac
+case " $* " in
+  *-javaagent:*)
+    echo "Model checking completed. No error has been found."
+    echo "5 states generated, 4 distinct states found, 0 states left on queue."
+    exit 0 ;;
+esac
+echo "java.rmi.server.ExportException: Listen failed on port: 0"
+exit 255
+SH
+chmod +x "$T/nojava" "$T/fakejava"
+t "fv-tlc reports UNAVAILABLE when the java binary does not run" 3 '^UNAVAILABLE java' \
+  env JAVA="$T/nojava" fv-tlc "$F/tla/Counter.tla" "$F/tla/Holds.cfg"
+mkdir -p "$T/sbx" "$T/sbx-noagent"
+: > "$T/sbx/tla2tools.jar"; : > "$T/sbx/no-rmi-listen.jar"; : > "$T/sbx-noagent/tla2tools.jar"
+t "fv-tlc runs TLC again with the socket agent when a sandbox forbids the listening socket" 0 '^PASS Holds.cfg: holds' \
+  env FV_HOME="$T/sbx" JAVA="$T/fakejava" fv-tlc "$F/tla/Counter.tla" "$F/tla/Holds.cfg"
+t "fv-tlc names the remedy when the socket is forbidden and the agent is not built" 1 'fv-install tla' \
+  env FV_HOME="$T/sbx-noagent" JAVA="$T/fakejava" fv-tlc "$F/tla/Counter.tla" "$F/tla/Holds.cfg"
+t "fv-install tla builds the socket agent beside the TLC jar" 0 'no-rmi-listen.jar' \
+  sh -c "FV_HOME='$T/home-agent' FV_TLA_URL='file://$HOME/.cache/fv/tla2tools.jar' fv-install tla >/dev/null && ls '$T/home-agent'"
+
 # --- fv-alloy --------------------------------------------------------------
 t "fv-alloy passes when every command matches its expectation" 0 'PASS check AtMostOneNext: UNSAT' \
   fv-alloy "$F/als/Small.als"

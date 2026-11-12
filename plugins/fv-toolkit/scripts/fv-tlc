@@ -32,17 +32,18 @@ Exit codes: 0 when every config passes, 1 on a FAIL or an ERROR, 2 on a usage
 error, and 3 when Java or the TLC jar is missing. Exit 3 means the spec was not
 checked, so never report it as a pass or as a failure of the model.
 
-Environment: FV_HOME (default ~/.cache/fv), JAVA (default java),
-FV_TLC_WORKERS (default 1).
+Environment: FV_HOME (default ~/.cache/fv), JAVA (default: the first java that
+runs), FV_TLC_WORKERS (default 1).
 """
 import json
 import os
 import re
-import shutil
-import subprocess
 import sys
-import tempfile
 from pathlib import Path
+
+sys.dont_write_bytecode = True  # Keep __pycache__ out of the installed plugin.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import fvlib  # noqa: E402
 
 # TLC 1.7.4 exit codes, measured on the fixtures in tests/fixtures/tla.
 EXIT_HOLDS, EXIT_DEADLOCK, EXIT_SAFETY, EXIT_LIVENESS = 0, 11, 12, 13
@@ -281,13 +282,13 @@ def main(argv):
         print(f"usage: no .cfg file beside {spec.name}", file=sys.stderr)
         return 2
 
-    java = os.environ.get("JAVA", "java")
-    jar = Path(os.environ.get("FV_HOME", Path.home() / ".cache" / "fv")) / "tla2tools.jar"
+    jar = fvlib.fv_home() / "tla2tools.jar"
     if not jar.is_file():
         print(f"UNAVAILABLE tla: {jar} is missing; run fv-install tla")
         return 3
-    if not shutil.which(java):
-        print(f"UNAVAILABLE java: {java} is not on PATH; install a JDK 17 or later or set JAVA")
+    java = fvlib.find_java()
+    if java is None:
+        print(fvlib.JAVA_UNAVAILABLE)
         return 3
 
     results, lines = [], []
@@ -303,19 +304,10 @@ def main(argv):
             result["verdict"] = "FAIL"
             lines.append(f"FAIL {cfg.name}: no expect header")
             continue
-        with tempfile.TemporaryDirectory(prefix="fv-tlc-") as metadir:
-            run = subprocess.run(
-                # TLC unpacks its standard modules into java.io.tmpdir. A private
-                # directory per run stops two concurrent runs from racing on those files.
-                [java, "-XX:+UseParallelGC", f"-Djava.io.tmpdir={metadir}", "-cp", str(jar), "tlc2.TLC",
-                 "-workers", os.environ.get("FV_TLC_WORKERS", "1"),
-                 "-metadir", metadir, "-config", str(cfg), str(spec)],
-                cwd=spec.parent, capture_output=True, text=True,
-            )
-        output = run.stdout + run.stderr
-        outcome = result["outcome"] = outcome_of(run.returncode, output, cfg_text)
+        code, output = fvlib.run_tlc(java, jar, ["-config", str(cfg), str(spec)], spec.parent)
+        outcome = result["outcome"] = outcome_of(code, output, cfg_text)
         if outcome is None:
-            lines.append(f"ERROR {cfg.name}: TLC exited {run.returncode} without a verdict")
+            lines.append(f"ERROR {cfg.name}: TLC exited {code} without a verdict")
             lines += ["  " + line for line in output.strip().splitlines()[-6:]]
             continue
         found = re.findall(r"(\d+) distinct states found", output)

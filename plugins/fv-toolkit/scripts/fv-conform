@@ -29,16 +29,18 @@ one event per atomic step of the spec, and log the state after the step.
 Exit codes: 0 when the result equals the expected one, 1 on a FAIL or an ERROR,
 2 on a usage error, 3 when Java or the TLC jar is missing.
 
-Environment: FV_HOME (default ~/.cache/fv), JAVA (default java).
+Environment: FV_HOME (default ~/.cache/fv), JAVA (default: the first java that runs).
 """
 import json
-import os
 import re
 import shutil
-import subprocess
 import sys
 import tempfile
 from pathlib import Path
+
+sys.dont_write_bytecode = True  # Keep __pycache__ out of the installed plugin.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import fvlib  # noqa: E402
 
 CONSTANT_KEYWORDS = {"CONSTANT", "CONSTANTS"}
 OTHER_KEYWORDS = {
@@ -137,13 +139,13 @@ def main(argv):
             print(f"usage: {path} is not a file", file=sys.stderr)
             return 2
 
-    java = os.environ.get("JAVA", "java")
-    jar = Path(os.environ.get("FV_HOME", Path.home() / ".cache" / "fv")) / "tla2tools.jar"
+    jar = fvlib.fv_home() / "tla2tools.jar"
     if not jar.is_file():
         print(f"UNAVAILABLE tla: {jar} is missing; run fv-install tla")
         return 3
-    if not shutil.which(java):
-        print(f"UNAVAILABLE java: {java} is not on PATH; install a JDK 17 or later or set JAVA")
+    java = fvlib.find_java()
+    if java is None:
+        print(fvlib.JAVA_UNAVAILABLE)
         return 3
 
     lines = [line for line in log.read_text().splitlines() if line.strip()]
@@ -166,17 +168,12 @@ def main(argv):
             (work / "FvTrace.cfg").write_text(
                 "SPECIFICATION fv_Spec\n" + "\n".join(constants)
                 + f"\nCONSTANT fv_Limit = {limit}\nINVARIANT fv_NotMatched\nCHECK_DEADLOCK FALSE\n")
-            with tempfile.TemporaryDirectory(prefix="fv-conform-meta-") as meta:
-                run = subprocess.run(
-                    [java, "-XX:+UseParallelGC", f"-Djava.io.tmpdir={meta}", "-cp", str(jar), "tlc2.TLC",
-                     "-workers", "1", "-metadir", meta, "-config", "FvTrace.cfg", "FvTrace.tla"],
-                    cwd=work, capture_output=True, text=True,
-                )
-            if run.returncode == 12:
+            code, output = fvlib.run_tlc(java, jar, ["-config", "FvTrace.cfg", "FvTrace.tla"], work)
+            if code == 12:
                 return True
-            if run.returncode == 0:
+            if code == 0:
                 return False
-            raise RuntimeError("\n".join((run.stdout + run.stderr).strip().splitlines()[-6:]))
+            raise RuntimeError("\n".join(output.strip().splitlines()[-6:]))
 
         try:
             if matched(len(events)):
