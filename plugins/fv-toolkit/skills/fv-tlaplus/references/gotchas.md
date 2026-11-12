@@ -14,6 +14,7 @@ Each fact below was reproduced with this plugin's examples or its test fixtures.
 | TLC stops at the first violated invariant | A config for a rejected design checks only the invariant that design threatens |
 | A property holds when the state it talks about is unreachable | Add a witness config. See `../examples/bad/unreachable-state/` |
 | A trace of a spec with one variable has no leading `/\` | `fv-tlc --trace` handles both forms |
+| TLC unpacks its standard modules into the Java temp directory, and two runs that start together can fail with "File does not exist: .../Naturals.tla" | `fv-tlc` gives each run its own temp directory. Do the same when you call TLC directly: `-Djava.io.tmpdir=<private dir>` |
 | A config comment starts with `\*` | The `\* expect:` header is a comment to TLC |
 | In a config, a set of model values is `Jobs = {a, b}` and a string needs quotes, as in `Order = "one_txn"` | An unquoted word is a model value, and it never equals a string in the spec |
 

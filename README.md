@@ -38,9 +38,11 @@ Every script prints one verdict per line and documents its exit codes in `--help
 | Script | What it does |
 |---|---|
 | `fv-install` | Downloads TLC 1.7.4 and Alloy 6.2.0 into `~/.cache/fv` and verifies each jar by SHA-256. A named on-demand tool runs its installer from `scripts/installers/`. |
-| `fv-tlc` | Runs TLC on each config and compares the outcome with the config's `\* expect:` header. |
+| `fv-tlc` | Runs TLC on each config and compares the outcome with the config's `\* expect:` header. `--json` prints each counterexample as parsed states. |
 | `fv-alloy` | Runs every command of an Alloy model and compares each result with its `expect` clause. |
 | `fv-mutate` | Plants each bug from a `.mutations` file in a copy and confirms that the check fails. |
+| `fv-replay` | Turns a TLC counterexample into a pytest file that drives the real code through the same steps. |
+| `fv-conform` | Checks that a recorded run of the real system, one JSON line per step, is a behaviour of the spec. |
 | `fv-drift` | Reports whether the code a model covers has changed since the model's sync commit. |
 
 A tool that is not installed makes a script exit 3 and print `UNAVAILABLE`. That result means the model was not checked. It is neither a pass nor a failure.

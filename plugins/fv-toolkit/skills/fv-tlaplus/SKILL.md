@@ -50,6 +50,12 @@ Copy `examples/good/refund-race/` to start. It has every file in this table.
    ```
 
 7. **Read each violation back into the code.** `fv-tlc --trace` prints each counterexample as the variables each step changed. Follow part 2 of `${CLAUDE_PLUGIN_ROOT}/references/fidelity.md`.
+8. **Link the model to the code.** `fv-replay` writes a pytest file that drives the code through a counterexample. `fv-conform` checks a recorded run of the code against the spec. `examples/linking/` shows both.
+
+   ```bash
+   ${CLAUDE_PLUGIN_ROOT}/scripts/fv-replay <Name>.tla <Mechanism>.cfg -o test_replay_<mechanism>.py
+   ${CLAUDE_PLUGIN_ROOT}/scripts/fv-conform <Name>.tla <Mechanism>.cfg run.jsonl
+   ```
 
 ## Reading the output
 
@@ -84,6 +90,7 @@ The user asks one question of each step: can my system really do this?
 
 - `examples/good/refund-race/` is the smallest complete model: a knob, three configs, a witness and mutations.
 - `examples/good/idempotent-receiver/` adds a crash fault with a switch, and liveness under a bounded fault.
+- `examples/linking/` replays a counterexample against real code and validates a recorded run against the spec.
 - `examples/bad/` holds models that pass while they prove nothing, each with the checker output and the fix. Read `bad/merged-atomicity/` before you write your first action.
 
 ## References

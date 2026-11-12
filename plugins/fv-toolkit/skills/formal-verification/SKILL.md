@@ -29,6 +29,8 @@ The scripts are in `${CLAUDE_PLUGIN_ROOT}/scripts/`. Run each one by its full pa
 | `fv-tlc` | Runs TLC on each config and compares the outcome with the config's `\* expect:` header. |
 | `fv-alloy` | Runs every command of an Alloy model and compares each result with its `expect` clause. |
 | `fv-mutate` | Plants each bug from a `.mutations` file in a copy and confirms that the check fails. |
+| `fv-replay` | Turns a TLC counterexample into a pytest file that replays it against the code. |
+| `fv-conform` | Checks a recorded run of the real system against a TLA+ spec. |
 | `fv-drift` | Reports whether the covered code changed since a model's sync commit. |
 
 A script exits 3 and prints `UNAVAILABLE` when a tool is missing. Report that target as "not checked" and give the printed remedy. It is neither a pass nor a failure.

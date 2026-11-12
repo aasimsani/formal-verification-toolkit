@@ -21,3 +21,13 @@ A model that is never tied to code drifts. Datadog found a year-old bug, conflic
 - Distributed services you can't drive directly: structured event logs → TLA+ trace validation, then a runtime monitor once stable.
 
 **Trace-validation pitfalls to encode:** implementations are finer-grained than specs, so log at the spec's atomicity; when logs come from separate nodes, use logical or vector clocks; a failed validation can mean a bad log mapping, not a bug, so check the mapping first ([Demirbas on CCF](https://muratbuffalo.blogspot.com/2025/02/smart-casual-verification-of.html)).
+
+## Scripts for the two links you will use most
+
+| Script | Direction | What it does |
+|---|---|---|
+| `${CLAUDE_PLUGIN_ROOT}/scripts/fv-replay` | Model to code | Turns a TLC counterexample into a pytest file. A driver that you write once maps each action to a call on the code, and the test checks the property after every step |
+| `${CLAUDE_PLUGIN_ROOT}/scripts/fv-conform` | Code to model | Takes a log of a real run, one JSON line per step, and asks TLC whether some behaviour of the spec matches it |
+| `${CLAUDE_PLUGIN_ROOT}/scripts/fv-tlc --json` | Model to anything | Prints each counterexample as parsed states, for a driver in another language |
+
+`${CLAUDE_PLUGIN_ROOT}/skills/fv-tlaplus/examples/linking/README.md` shows both scripts on one small service.

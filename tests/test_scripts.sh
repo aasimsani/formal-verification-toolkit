@@ -90,6 +90,13 @@ printf '\\* expect: holds\nSPECIFICATION Spec\nCONSTANT Max = 3\nINVARIANT Never
 t "fv-tlc prints the step that broke an invariant as changed variables" 1 'Next: x: 2 -> 3' \
   fv-tlc "$T/trace/Counter.tla" "$T/trace/Holds.cfg"
 
+t "fv-tlc reduces a function-valued variable to the keys that changed" 0 'Start: pc\[[ab]\]: "idle" -> "busy"' \
+  fv-tlc --trace "$F/tla-pair/Pair.tla"
+t "fv-tlc --json prints each state of a counterexample as parsed values" 0 '^busy busy 2 2$' \
+  sh -c "fv-tlc --json '$F/tla-pair/Pair.tla' | python3 -c 'import json,sys; r=json.load(sys.stdin)[0]; s=r[\"trace\"][-1][\"state\"]; print(s[\"pc\"][\"a\"], s[\"pc\"][\"b\"], len(s[\"log\"]), s[\"log\"][1][\"n\"])'"
+t "fv-tlc --json keeps the verdict and the exit code of the plain run" 1 '"verdict": "FAIL"' \
+  fv-tlc --json "$T/trace/Counter.tla" "$T/trace/Holds.cfg"
+
 # --- fv-alloy --------------------------------------------------------------
 t "fv-alloy passes when every command matches its expectation" 0 'PASS check AtMostOneNext: UNSAT' \
   fv-alloy "$F/als/Small.als"
