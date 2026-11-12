@@ -25,5 +25,6 @@ Each of these tools installs when it is named. Load its skill first, because the
 | Can a Rust function panic, overflow or index out of bounds on some input? | Kani | `fv-kani` | `fv-install kani` |
 | Does the real code of a distributed system survive crashes, restarts, message loss and reordering, with every failure replayable from a seed? | Deterministic simulation | `fv-dst` | `fv-install dst` |
 | Does a UI flow or a workflow implementation follow its state machine through every reachable path? | XState graph | `fv-xstate` | `fv-install xstate` |
+| Can an active attacker forge, replay or redirect messages in a security protocol? | Tamarin | `fv-tamarin` | `fv-install tamarin` |
 
 A tool that is not in this file has no skill yet. Read `tools.md`, say that no skill covers the tool, and follow the router's workflow from the tool's own documentation.
