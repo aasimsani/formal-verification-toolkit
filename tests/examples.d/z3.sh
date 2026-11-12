@@ -22,7 +22,8 @@ t "bad/unknown-read-as-pass: fv-z3 reports the same run as an error" 1 "^ERROR c
 t "fv-z3 exits 3 when uv is missing" 3 "^UNAVAILABLE z3" \
   env PATH="$S:/usr/bin:/bin" fv-z3 "$A/good/shipping-tiers/shipping.py"
 
-Z3_BROKEN="$(mktemp -t fv-z3-broken).py"
+Z3_DIR="$(mktemp -d)"
+Z3_BROKEN="$Z3_DIR/broken.py"
 printf 'def check_Broken(\n' > "$Z3_BROKEN"
 t "fv-z3 reports a broken artifact as an error, never as the violation a check expects" 1 "^ERROR .*: SyntaxError" \
   fv-z3 "$Z3_BROKEN"
