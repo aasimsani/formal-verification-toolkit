@@ -198,6 +198,24 @@ printf 'run fv-tlc Counter.tla Deadlock.cfg Missing.cfg\nfile Counter.tla\n' > "
 t "fv-mutate refuses to run when the unmutated check fails" 1 '^BASELINE FAILED' \
   fv-mutate "$T/baseline/Counter.mutations"
 
+# A real crate's target/ holds gigabytes, and one copy is made per mutation.
+mkdir -p "$T/crate/target"
+: > "$T/crate/Cargo.toml"
+echo good > "$T/crate/src.txt"
+echo built > "$T/crate/target/out"
+cat > "$T/crate/crate.mutations" <<'EOF'
+run sh -c 'test ! -e target && grep -q good src.txt || { echo "FAIL Good"; exit 1; }'
+properties Good
+file src.txt
+
+mutation the value goes bad
+detects Good
+- good
++ bad
+EOF
+t "fv-mutate leaves Cargo build output out of the copy" 0 '^DETECTED the value goes bad' \
+  fv-mutate "$T/crate/crate.mutations"
+
 t "the scripts leave the fixture files unchanged" 0 '^same$' \
   sh -c "[ '$before' = '$(tree_sum)' ] && echo same"
 

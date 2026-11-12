@@ -48,7 +48,16 @@ import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
-IGNORED = shutil.ignore_patterns(".git", "node_modules", ".venv", "states", "__pycache__", ".hypothesis", ".pytest_cache")
+_IGNORED_NAMES = shutil.ignore_patterns(".git", "node_modules", ".venv", "states", "__pycache__", ".hypothesis", ".pytest_cache")
+
+
+def IGNORED(directory, names):
+    """Name the entries of one directory that the copy leaves out."""
+    skipped = set(_IGNORED_NAMES(directory, names))
+    # Cargo writes build output to target/ beside Cargo.toml. Another project may keep source in a target/ directory.
+    if "Cargo.toml" in names:
+        skipped.add("target")
+    return skipped
 
 
 @dataclass
