@@ -10,4 +10,12 @@ Pick the row whose question matches the claim, load that skill, and install the 
 | Can the data or the configuration reach an invalid shape? Relations, permissions, ownership, compatibility | Alloy 6 | `fv-alloy` | `fv-install alloy` |
 | Is this Python code correct for every input, or for every sequence of calls? | Hypothesis | `fv-hypothesis` | The project's package manager |
 
+## On-demand tools
+
+Each of these tools installs when it is named. Load its skill first, because the skill says what the installer needs.
+
+| The question is | Tool | Skill | Install |
+|---|---|---|---|
+| Does a rule table, a policy or a set of numeric constraints have a gap, an overlap or a contradiction? Arithmetic and boolean conditions over a few variables | Z3 | `fv-z3` | `fv-install z3` |
+
 A tool that is not in this file has no skill yet. Read `tools.md`, say that no skill covers the tool, and follow the router's workflow from the tool's own documentation.

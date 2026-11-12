@@ -38,6 +38,10 @@ The router reads its pattern catalogs, property families and fault models from `
 
 The two core jars install with `fv-install`. Every other tool installs when it is named, for example `fv-install z3`. `fv-install --list` prints every tool the script can install, and `fv-install --check <tool>` reports whether one is ready without installing it. `docs/adding-a-tool.md` is the contract for a new tool.
 
+| Skill | What it does |
+|---|---|
+| `fv-z3` | Encodes a rule table, a policy diff or a config invariant as a Z3 formula and searches for a violation. It reports `unknown` as an error and never as a pass. |
+
 ## Scripts
 
 Every script prints one verdict per line and documents its exit codes in `--help`.
