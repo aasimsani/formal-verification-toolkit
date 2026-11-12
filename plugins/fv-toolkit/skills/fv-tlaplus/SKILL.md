@@ -92,6 +92,7 @@ When the `statechart` skill of the pstack plugin is installed, use it to draw th
 
 - `examples/good/refund-race/` is the smallest complete model: a knob, three configs, a witness and mutations.
 - `examples/good/idempotent-receiver/` adds a crash fault with a switch, and liveness under a bounded fault.
+- The other folders under `examples/good/` are templates, one per pattern: transactional outbox, orchestrated saga, two-phase commit, leader election, lease fencing, reconciler, cache invalidation, CDC snapshot handoff, DAG scheduler, watermark cursor and release ordering. Start from the template whose pattern matches the claim, and keep its knob, its configs and its witness.
 - `examples/linking/` replays a counterexample against real code and validates a recorded run against the spec.
 - `examples/bad/` holds models that pass while they prove nothing, each with the checker output and the fix. Read `bad/merged-atomicity/` before you write your first action.
 
