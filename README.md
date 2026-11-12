@@ -54,6 +54,7 @@ The two core jars install with `fv-install`. Every other tool installs when it i
 
 Apalache has no skill of its own. `fv-install apalache` adds the symbolic checker to `fv-tlaplus`, which uses it when TLC cannot enumerate the states or when an invariant must be shown inductive.
 | `fv-elle` | Checks a recorded history of transactions against an isolation level with Elle and names the anomaly, such as G1c or G-single, with the cycle that shows it. |
+| `fv-dafny` | Proves a small algorithm against its specification with Dafny, for every input, and reports each assertion that the verifier could not prove. |
 
 ## Scripts
 
@@ -88,11 +89,11 @@ The Hypothesis examples need `uv`, which supplies Hypothesis and pytest for the 
 
 ## Evals
 
-`plugins/fv-toolkit/evals/` holds 37 cases for `claude plugin eval`.
+`plugins/fv-toolkit/evals/` holds 38 cases for `claude plugin eval`.
 
 | Group | Cases | A case passes when |
 |---|---|---|
-| `route/`, one or two scenarios per tool | 20 | The skill of the fitting tool loads, no other tool's skill loads, the reply names the tool, and the plan carries one rule that the tool's skill teaches |
+| `route/`, one or two scenarios per tool | 21 | The skill of the fitting tool loads, no other tool's skill loads, the reply names the tool, and the plan carries one rule that the tool's skill teaches |
 | `route/`, scenarios beside another tool's territory | 7 | The fitting skill loads and the neighbouring skill does not. A commit protocol in C# goes to TLA+ and not to Stateright, for example |
 | `route/low-value-target` | 1 | No tool skill loads for a factory and an adapter, and the reply names an ordinary test |
 | `no-trigger/` | 4 | No skill of this plugin loads for a git question, a unit test, a type error or a flaky CI job |
@@ -107,11 +108,11 @@ FV_EVAL_JARS=~/.cache/fv claude plugin eval plugins/fv-toolkit --trust-plugin --
 
 The sandbox of a run has no network, so the scaffold of an effect case copies the pinned jars from `FV_EVAL_JARS`. `tests/test_structure.sh` fails when a tool skill has no routing case.
 
-The run of 2026-11-12 on Claude Code 2.1.322 took one sample per case:
+The run of 2026-11-12 on Claude Code 2.1.322 took one sample per case. The Dafny scenario was added after the full run and ran on its own:
 
 | Group | Cases that passed every grader | Cost |
 |---|---|---|
-| Routing | 28 of 28 | $7.99 |
+| Routing | 29 of 29 | $8.21 |
 | No trigger | 4 of 4 | $0.47 |
 | Effect | 5 of 5 | $3.67 |
 

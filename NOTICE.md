@@ -10,6 +10,12 @@ This project is MIT licensed. See `LICENSE`. Parts of its text adapt the open-so
 | [Specula](https://github.com/specula-org/Specula) | Apache-2.0 | `1a86e7e5ca7f` | Part 2 of `references/fidelity.md`, from `skills/tla-checking-workflow/references/spec-fidelity-checklist.md`. The procedure was reworded, generalized beyond consensus protocols, and extended with dispositions. |
 | [tlaplus/AgentSkills](https://github.com/tlaplus/AgentSkills) | MIT | `f2adb5e4e2c6` | `skills/fv-tlaplus/references/refactors.md`, from the `tlaplus-split-action` and `tlaplus-add-variable` skills. Both procedures were condensed and reworded. |
 
+## Generated code
+
+| Source | License | Version | What this project ships |
+|---|---|---|---|
+| [Dafny](https://github.com/dafny-lang/dafny) | MIT | 4.11.0 | `skills/fv-dafny/examples/good/allocation/Allocate-py/`, which is the output of `dafny build --target:py`. The folders `_dafny/` and `System_/` in it are Dafny's runtime for Python, unchanged. |
+
 ## Ideas with no text or code copied
 
 - [agent-formal-verify](https://github.com/michael-denyer/agent-formal-verify) (GPL-3.0): a mutations file whose runner prints DETECTED, MISSED and UNCOVERED, and replaying past fix commits as mutations. `scripts/fv-mutate` is an independent implementation with its own file format.
@@ -47,6 +53,10 @@ SOFTWARE.
 ## tlaplus/AgentSkills license
 
 tlaplus/AgentSkills is under the same MIT License text as above, with the notice "Copyright (c) 2026 TLA+".
+
+## Dafny license
+
+Dafny is under the same MIT License text as above, with the notice "Copyright (c) Microsoft Corporation".
 
 ## Specula license
 
