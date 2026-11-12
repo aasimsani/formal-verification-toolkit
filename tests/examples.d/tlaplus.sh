@@ -39,6 +39,26 @@ t "leader-election: every config meets its declared outcome" 0 'PASS LocalMajori
 t "leader-election: every planted bug is detected" 0 'uncovered=0' \
   fv-mutate "$G/leader-election/LeaderElection.mutations"
 
+t "cdc-snapshot-handoff: every config meets its declared outcome" 0 'PASS WrongOffset.cfg: violated ExactlyOnce' \
+  fv-tlc "$G/cdc-snapshot-handoff/CdcSnapshotHandoff.tla"
+t "cdc-snapshot-handoff: every planted bug is detected" 0 'uncovered=0' \
+  fv-mutate "$G/cdc-snapshot-handoff/CdcSnapshotHandoff.mutations"
+
+t "watermark-cursor: every config meets its declared outcome" 0 'PASS GtNoDedup.cfg: violated ExactlyOnce' \
+  fv-tlc "$G/watermark-cursor/WatermarkCursor.tla"
+t "watermark-cursor: every planted bug is detected" 0 'uncovered=0' \
+  fv-mutate "$G/watermark-cursor/WatermarkCursor.mutations"
+
+t "dag-scheduler: every config meets its declared outcome" 0 'PASS NaiveRestart.cfg: violated NeverRunsTwice' \
+  fv-tlc "$G/dag-scheduler/DagScheduler.tla"
+t "dag-scheduler: every planted bug is detected" 0 'uncovered=0' \
+  fv-mutate "$G/dag-scheduler/DagScheduler.mutations"
+
+t "reconciler: every config meets its declared outcome" 0 'PASS StaleRead.cfg: violated NeverOvershoots' \
+  fv-tlc "$G/reconciler/Reconciler.tla"
+t "reconciler: every planted bug is detected" 0 'uncovered=0' \
+  fv-mutate "$G/reconciler/Reconciler.mutations"
+
 t "bad/merged-atomicity: the merged model passes, which is the symptom" 0 'PASS Merged.cfg: holds' \
   fv-tlc "$B/merged-atomicity/MergedRefund.tla"
 t "bad/liveness-without-fairness: TLC answers with a stuttering counterexample" 0 'PASS NoFairness.cfg: liveness' \
