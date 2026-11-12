@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# Install the pinned checkers into $FV_HOME and verify each download by SHA-256.
+#
+# Usage: fv-install [tla|alloy]...     With no argument, both tools are installed.
+#
+# The script prints "READY <tool> <path>" for each tool it installed or found.
+# It prints "UNAVAILABLE <tool>: <remedy>" and exits 3 when Java does not run,
+# a download fails, or a checksum differs from the pin. A usage error exits 2.
+# A tool that is UNAVAILABLE was not checked, which is neither a pass nor a failure.
+set -uo pipefail
+
+FV_HOME="${FV_HOME:-$HOME/.cache/fv}"
+JAVA="${JAVA:-java}"
+
+# To move a pin, change the version and the checksum together.
+TLA_VERSION=1.7.4
+TLA_SHA256=936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88
+TLA_URL="${FV_TLA_URL:-https://github.com/tlaplus/tlaplus/releases/download/v$TLA_VERSION/tla2tools.jar}"
+ALLOY_VERSION=6.2.0
+ALLOY_SHA256=6b8c1cb5bc93bedfc7c61435c4e1ab6e688a242dc702a394628d9a9801edb78d
+ALLOY_URL="${FV_ALLOY_URL:-https://github.com/AlloyTools/org.alloytools.alloy/releases/download/v$ALLOY_VERSION/org.alloytools.alloy.dist.jar}"
+
+sha256() {
+  if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1" | cut -d' ' -f1
+  else shasum -a 256 "$1" | cut -d' ' -f1; fi
+}
+
+unavailable() {
+  echo "UNAVAILABLE $1: $2"
+  exit 3
+}
+
+# fetch <tool> <file name> <url> <sha256>
+# An existing jar is kept only when its checksum equals the pin, so a moved pin
+# replaces the old jar on the next run.
+fetch() {
+  local tool=$1 file="$FV_HOME/$2" url=$3 want=$4
+  if [ ! -f "$file" ] || [ "$(sha256 "$file")" != "$want" ]; then
+    mkdir -p "$FV_HOME"
+    if ! curl -fsSL -o "$file.part" "$url"; then
+      rm -f "$file.part"
+      unavailable "$tool" "the download from $url failed"
+    fi
+    if [ "$(sha256 "$file.part")" != "$want" ]; then
+      rm -f "$file.part"
+      unavailable "$tool" "checksum of $url differs from the pinned $want"
+    fi
+    mv "$file.part" "$file"
+  fi
+  echo "READY $tool $file"
+}
+
+"$JAVA" -version >/dev/null 2>&1 ||
+  unavailable java "install a JDK 17 or later, or set JAVA to its java binary"
+
+[ $# -eq 0 ] && set -- tla alloy
+for tool in "$@"; do
+  case "$tool" in
+    tla) fetch tla tla2tools.jar "$TLA_URL" "$TLA_SHA256" ;;
+    alloy) fetch alloy alloy.jar "$ALLOY_URL" "$ALLOY_SHA256" ;;
+    *)
+      echo "usage: fv-install [tla|alloy]..." >&2
+      exit 2
+      ;;
+  esac
+done

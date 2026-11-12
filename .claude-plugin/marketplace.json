@@ -1,0 +1,16 @@
+{
+  "name": "formal-verification-toolkit",
+  "metadata": {
+    "description": "Formal verification skills for Claude Code"
+  },
+  "owner": {
+    "name": "Aasim Sani"
+  },
+  "plugins": [
+    {
+      "name": "fv-toolkit",
+      "source": "./plugins/fv-toolkit",
+      "description": "Picks the cheapest formal tool that can produce a failure (TLA+, Alloy or Hypothesis), writes the model from the code, proves the check can fail, and replays each counterexample against the real code."
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+run fv-alloy Small.als
+properties AtMostOneNext
+file Small.als
+
+mutation a node may have many successors
+detects AtMostOneNext
+- sig Node { link: lone Node }
++ sig Node { link: set Node }
