@@ -22,6 +22,92 @@ Then install the pinned checkers once. The command needs a JDK 17 or later.
 plugins/fv-toolkit/scripts/fv-install
 ```
 
+## How it works
+
+You give the `formal-verification` skill a claim, a design or a diff. It decides whether any claim is worth a formal check, picks the tool, and reports a pass only after the check has failed on a planted bug.
+
+```mermaid
+flowchart TD
+    REQ(["A claim that says never, always,<br/>at most once or exactly once"])
+    REQ --> S1{"Step 1: triage<br/>Does any claim earn a formal check?"}
+    S1 -->|"no"| STOP(["One paragraph that says why, and stop"])
+    S1 -->|"yes"| S2["Step 2: pick the tool by the question<br/>the cheapest rung that can produce the failure"]
+    S2 --> S3["Step 3: freeze the properties<br/>one sentence each, with its source.<br/>The user confirms them, and fv-pin records them"]
+    S3 --> S4["Step 4: write the model from the code<br/>one action per atomic step,<br/>with the commit it was read at"]
+    S4 --> S5["Step 5: check, with a declared outcome per run<br/>the chosen design holds, a rejected one fails,<br/>and a witness reaches the risky state"]
+    S5 --> S6["Step 6: make the check bite<br/>fv-mutate plants each bug,<br/>and every one must print DETECTED"]
+    S6 --> S7{"Step 7: read each counterexample<br/>back into the code"}
+    S7 -->|"a step can't happen in the code"| S4
+    S7 -->|"every step can happen"| S8["Step 8: link the model to the code<br/>such as a regression test<br/>that fv-replay writes from the trace"]
+    S8 --> S9(["Step 9: report<br/>each property's verdict, the bounds and faults,<br/>and each counterexample as numbered steps"])
+    S9 -.->|"after the code changes"| MT["fv-maintain"]
+```
+
+A failure of the design you chose is a finding, and it's the most valuable result the loop produces. The skill never weakens a property or a model to make a check pass, and it never calls a bounded check verified or proved.
+
+The tool comes from one question: what is the claim about? The three tools with a thick border are core, and `fv-install` installs the rest the first time they're named.
+
+```mermaid
+flowchart LR
+    Q{"What is<br/>the question?"}
+    Q -->|"can a bad ordering happen?"| TLA["fv-tlaplus<br/>TLA+ with TLC, or Apalache"]
+    Q -->|"can the data or a config reach an invalid shape?"| AL["fv-alloy<br/>Alloy 6"]
+    Q -->|"is this Python code correct for every input?"| HY["fv-hypothesis<br/>Hypothesis"]
+    Q -->|"does a rule table or a policy have a gap or a contradiction?"| Z3["fv-z3"]
+    Q -->|"does a running API keep to its OpenAPI schema?"| SC["fv-schemathesis"]
+    Q -->|"do two versions of a Python function ever disagree?"| CH["fv-crosshair"]
+    Q -->|"can real Rust code deadlock or lose an update?"| SH["fv-shuttle<br/>Shuttle and Loom"]
+    Q -->|"does a Rust protocol hold under every message order?"| SR["fv-stateright"]
+    Q -->|"does a Cedar policy change widen access?"| CE["fv-cedar"]
+    Q -->|"can a Rust function panic or overflow?"| KA["fv-kani"]
+    Q -->|"does a distributed system survive crashes and message loss?"| DST["fv-dst<br/>deterministic simulation"]
+    Q -->|"does a UI flow follow its state machine?"| XS["fv-xstate"]
+    Q -->|"can an attacker forge or replay a message?"| TM["fv-tamarin"]
+    Q -->|"do two SQL queries return the same rows?"| SQ["fv-sqlequiv"]
+    Q -->|"does a transaction history break an isolation level?"| EL["fv-elle"]
+    Q -->|"must an algorithm be correct for every input?"| DA["fv-dafny"]
+    Q -->|"a factory, an adapter or another pattern<br/>with no invariant of its own"| NO["No formal check<br/>Test the contract it wraps"]
+    classDef core stroke-width:3px
+    class TLA,AL,HY core
+```
+
+A model stays true only while the code it covers stays the same. Each model records the commit it was read at, `fv-pin` records the properties the user confirmed, and `fv-maintain` brings a model back in line after the code moves on.
+
+```mermaid
+stateDiagram-v2
+    state "In sync" as Sync
+    state "Covered code changed" as Changed
+    state "Updated" as Updated
+    state "Bug in the code" as Bug
+    state "Blocked" as Blocked
+    [*] --> Sync: the user confirms the properties, and fv-pin records them
+    Sync --> Changed: fv-drift reports a commit that touched covered code
+    Changed --> Sync: the change alters nothing the model describes
+    Changed --> Updated: the model is rewritten from the new code, and every new mutation is detected
+    Changed --> Bug: the updated model fails, and every step of the trace can happen in the code
+    Changed --> Blocked: the model can't be brought back in line, or the check can't run
+    Updated --> Sync: the model's sync record moves to the checked commit
+    Bug --> [*]: a finding, with the commit that introduced it
+```
+
+A property changes only when the promise itself changed on purpose, and the change cites its evidence. `fv-pin check` reports any property that changed without the user's agreement.
+
+The repo holds the plugin, its eval and the checks of both.
+
+```text
+formal-verification-toolkit/
+├── .claude-plugin/marketplace.json    the entry that /plugin marketplace add reads
+├── .agents/plugins/marketplace.json   the same entry for Codex
+├── plugins/fv-toolkit/                the plugin that /plugin install copies
+│   ├── skills/                        18 skills: the router, 3 core tools, fv-maintain and 13 tools on demand
+│   ├── references/                    12 files of shared rules, and catalog/ with 166 architecture patterns
+│   ├── scripts/                       fv-install, the checker wrappers, and installers/ for each tool on demand
+│   └── evals/                         38 eval cases: 29 routing, 4 no-trigger and 5 that run a real checker
+├── tests/                             checks of the scripts, the structure and every shipped example
+├── docs/                              spec.md, the design behind the skills, and adding-a-tool.md
+└── NOTICE.md                          the open-source work this project adapts
+```
+
 ## Skills
 
 | Skill | What it does |
@@ -51,10 +137,10 @@ The two core jars install with `fv-install`. Every other tool installs when it i
 | `fv-xstate` | Generates the shortest path to every reachable state of an XState machine and replays each path on the real implementation. |
 | `fv-tamarin` | Writes and checks a Tamarin theory of a security protocol against an active attacker, and pairs every safety lemma with a lemma that shows the protocol can run. |
 | `fv-sqlequiv` | Checks two SQL queries for equal results on every small table up to a bound, with NULLs and duplicate rows, on SQLite. |
-
-Apalache has no skill of its own. `fv-install apalache` adds the symbolic checker to `fv-tlaplus`, which uses it when TLC cannot enumerate the states or when an invariant must be shown inductive.
 | `fv-elle` | Checks a recorded history of transactions against an isolation level with Elle and names the anomaly, such as G1c or G-single, with the cycle that shows it. |
 | `fv-dafny` | Proves a small algorithm against its specification with Dafny, for every input, and reports each assertion that the verifier could not prove. |
+
+Apalache has no skill of its own. `fv-install apalache` adds the symbolic checker to `fv-tlaplus`, which uses it when TLC cannot enumerate the states or when an invariant must be shown inductive.
 
 ## Scripts
 
